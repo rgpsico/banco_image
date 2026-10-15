@@ -30,6 +30,7 @@ async function logout() {
         >
           <option v-for="t in tenants.tenants" :key="t.id" :value="t.id">{{ t.name }}</option>
         </select>
+        <RouterLink v-if="tenants.current" class="nav-link p-0" to="/library">Biblioteca</RouterLink>
         <RouterLink v-if="tenants.current" class="nav-link p-0" to="/members">Membros</RouterLink>
         <RouterLink v-if="tenants.current" class="nav-link p-0" to="/settings">Configurações</RouterLink>
         <span class="text-muted small">{{ auth.user?.name }}</span>

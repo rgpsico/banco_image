@@ -30,10 +30,28 @@ return [
 
     'disks' => [
 
+        // Mídia privada (originais e variantes). Fora de public/: nunca servida diretamente pelo servidor web.
+        'media' => [
+            'driver' => 'local',
+            'root' => storage_path('app/private/media'),
+            'visibility' => 'private',
+            'throw' => true,
+            'report' => true,
+        ],
+
+        // Partes de uploads em andamento (temporário, limpo por mediahub:prune-uploads).
+        'uploads' => [
+            'driver' => 'local',
+            'root' => storage_path('app/private/uploads'),
+            'visibility' => 'private',
+            'throw' => true,
+            'report' => true,
+        ],
+
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app/private'),
-            'serve' => true,
+            'serve' => false, // sem rota /storage/*: arquivos privados só saem por URL assinada do MediaHub
             'throw' => false,
             'report' => false,
         ],

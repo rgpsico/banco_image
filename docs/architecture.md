@@ -31,11 +31,20 @@ Isolamento **lógico** por `tenant_id` no mesmo banco.
 - Cada registro tem `id` numérico **interno** e `ulid` **público** (usado nas rotas e nas respostas). O id numérico nunca sai pela API.
 - Valores monetários são **inteiros em centavos** (`*_cents`). Nunca `float`.
 
-## Armazenamento (planejado para a Fase 2)
+## Armazenamento
 
-Um `StorageService` independente de provedor sobre o `Storage` do Laravel. Fase 1/2: disco local **privado**
-(`storage/app/private`), sem URL pública para os originais. Fase 4: trocar o disco por Cloudflare R2 (S3 compatível)
-sem mudar as regras de negócio.
+Contrato `MediaStorage` (`app/Modules/Storage/Contracts`) com implementação `DiskMediaStorage` sobre o `Storage` do Laravel.
+Hoje: disco local **privado** (`storage/app/private/media`), sem rota pública (`serve => false`) e fora de `public/`.
+Fase 4: apontar `MEDIA_DISK` para um disco S3/R2: as regras de negócio não mudam (incluindo cópia local temporária para processar imagens).
+
+- **Caminhos gerados pelo servidor:** `tenants/{ulid-do-projeto}/{ano}/{mês}/{ulid-da-mídia}.{ext}`; a extensão vem do conteúdo detectado, nunca do nome enviado.
+- **Variantes** (`media_variants`): `thumb` (400 px) e `preview` (1600 px) em WebP, geradas por um job na fila (GD, com correção de rotação EXIF).
+- **Metadados:** dimensões, câmera e data da captura. GPS **não** é guardado.
+- **Vídeo:** aceito (MP4/WebM/MOV) e reproduzível com Range; ainda sem miniatura (precisa de ffmpeg, previsto para a Fase 4).
+
+### Fluxo de upload
+`POST /uploads` (cria sessão, confere tipo/tamanho/cota) → `POST /uploads/{id}/chunks/{n}` (partes) → `POST /uploads/{id}/complete`
+(monta o arquivo, valida o conteúdo real com `finfo`/`getimagesize`, confere a cota **com o projeto travado**, grava e enfileira as miniaturas).
 
 ## Banco de dados
 

@@ -5,7 +5,11 @@ Plataforma para **armazenar, gerenciar e comercializar imagens e vídeos**, com 
 1. **Biblioteca de mídia privada multi-tenant**: cada projeto (SurfGestão, PilatesGestão, Comunidade PPG...) tem seus usuários, coleções e arquivos, totalmente isolados.
 2. **Marketplace público** (Fase 3): fotógrafos e criadores enviam mídia, definem preço e licença, e a plataforma fica com uma comissão configurável.
 
-> **Status:** Fase 1 (Fundação) concluída. Veja [docs/roadmap.md](docs/roadmap.md).
+> **Status:** Fases 1 (Fundação) e 2 (Biblioteca) concluídas. Veja [docs/roadmap.md](docs/roadmap.md).
+
+**O que já funciona:** contas e projetos isolados (papéis owner/admin/editor/viewer), **biblioteca de mídia** com upload em partes e barra de progresso
+(imagens até 25 MB, vídeos até 500 MB), validação real do tipo pelo conteúdo, miniaturas, busca, filtros, pastas, renomear, excluir,
+download seguro por link temporário e cota de armazenamento por projeto.
 
 ## Stack
 
@@ -62,7 +66,8 @@ docker compose run --rm api php artisan test
 ```
 
 Os testes usam o banco `mediahub_test` (criado automaticamente no MySQL do Docker).
-Cobrem cadastro/autenticação, projetos, papéis, membros e **isolamento entre projetos**.
+Cobrem cadastro/autenticação, projetos, papéis, membros, **isolamento entre projetos**, upload em partes, validação de arquivos,
+cota, URLs assinadas, download autorizado e pastas (67 testes).
 
 ## Documentação
 

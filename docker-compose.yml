@@ -50,6 +50,16 @@ services:
       api:
         condition: service_healthy  # espera as dependências/migrations do serviço api
 
+  scheduler:
+    build: ./docker/api
+    command: php artisan schedule:work
+    working_dir: /var/www
+    volumes:
+      - ./api:/var/www
+    depends_on:
+      api:
+        condition: service_healthy
+
   web:
     image: node:22-alpine
     working_dir: /app

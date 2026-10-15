@@ -11,6 +11,20 @@
 - **Sanitização:** nomes passam por `strip_tags`; ids numéricos, caminhos e discos ficam ocultos nos models (`$hidden`).
 - **Auditoria:** canal `audit` (`storage/logs/audit-*.log`, 90 dias) com login, falhas, projetos e membros; nunca registra senhas ou tokens.
 
+## Biblioteca de mídia (Fase 2)
+
+- **Tipo pelo conteúdo:** `finfo` + `getimagesize` decidem; extensão e `Content-Type` do cliente são ignorados. O tipo declarado precisa bater com o conteúdo.
+  SVG e HTML ficam de fora (podem carregar script). Script PHP com extensão `.jpg` é recusado.
+- **Limites:** 25 MB por imagem, 500 MB por vídeo, 50 megapixels (proteção contra imagem "bomba"), 20 MB por requisição de parte.
+- **Cota com lock:** a cota é revalidada na finalização com `lockForUpdate` no projeto: dois uploads paralelos não estouram o limite.
+- **Sem path traversal:** nomes de arquivo e pastas são ULIDs do servidor; o nome enviado vira só `display_name`, sanitizado (tags, caminhos e caracteres de controle removidos).
+- **Originais protegidos:** disco privado, sem rota pública. Entrega por URL **assinada, relativa e temporária** (60 min para miniaturas/preview; 2 min para download).
+  A permissão é verificada na emissão (`MediaPolicy`) e a emissão de download é auditada.
+- **Cabeçalhos de entrega:** `X-Content-Type-Options: nosniff`, `Content-Security-Policy: default-src 'none'; sandbox`, `attachment` nos downloads.
+- **Isolamento:** mídia, pastas e sessões de upload usam o escopo por projeto (falha fechado); mídia ou pasta de outro projeto é `404`; anexar mídia alheia a uma pasta é recusado (tudo ou nada).
+  Sessões de upload só servem a quem as criou.
+- **Metadados:** GPS não é guardado nem exposto.
+
 ## Decisão a revisitar
 
 O front guarda o token em `localStorage` (simples e adequado ao MVP). Um XSS poderia roubá-lo. Alternativa mais forte:

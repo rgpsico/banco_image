@@ -10,6 +10,7 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www
 
+COPY php.ini /usr/local/etc/php/conf.d/zz-mediahub.ini
 COPY entrypoint.sh /usr/local/bin/mediahub-entrypoint
 RUN sed -i 's/\r$//' /usr/local/bin/mediahub-entrypoint && chmod +x /usr/local/bin/mediahub-entrypoint
 ENTRYPOINT ["mediahub-entrypoint"]

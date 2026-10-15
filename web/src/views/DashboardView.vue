@@ -49,9 +49,12 @@ const gb = (b) => (b / 1024 / 1024 / 1024).toFixed(1)
               <div class="progress mt-1" style="height: 6px">
                 <div class="progress-bar" :style="{ width: Math.min(100, (t.storage.used_bytes / t.storage.quota_bytes) * 100) + '%' }"></div>
               </div>
-              <button class="btn btn-sm mt-3" :class="t.id === tenants.currentId ? 'btn-primary' : 'btn-outline-primary'" @click="tenants.select(t.id)">
-                {{ t.id === tenants.currentId ? 'Projeto ativo' : 'Usar este projeto' }}
-              </button>
+              <div class="d-flex gap-2 mt-3">
+                <button class="btn btn-sm" :class="t.id === tenants.currentId ? 'btn-primary' : 'btn-outline-primary'" @click="tenants.select(t.id)">
+                  {{ t.id === tenants.currentId ? 'Projeto ativo' : 'Usar este projeto' }}
+                </button>
+                <RouterLink v-if="t.id === tenants.currentId" class="btn btn-sm btn-outline-secondary" to="/library">Abrir biblioteca</RouterLink>
+              </div>
             </div>
           </div>
         </div>

@@ -20,7 +20,8 @@ class ResolveTenant
 
     public function handle(Request $request, Closure $next): Response
     {
-        $ulid = $request->route('tenant')?->ulid ?? $request->header('X-Tenant');
+        $param = $request->route('tenant');
+        $ulid = $param instanceof \App\Models\Tenant ? $param->ulid : (is_string($param) ? $param : $request->header('X-Tenant'));
         $user = $request->user();
 
         if (! $user || ! is_string($ulid) || $ulid === '') {

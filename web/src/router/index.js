@@ -7,6 +7,7 @@ const routes = [
   { path: '/forgot-password', name: 'forgot', component: () => import('../views/ForgotPasswordView.vue'), meta: { guest: true } },
   { path: '/reset-password', name: 'reset', component: () => import('../views/ResetPasswordView.vue'), meta: { guest: true } },
   { path: '/', name: 'dashboard', component: () => import('../views/DashboardView.vue'), meta: { auth: true } },
+  { path: '/library', name: 'library', component: () => import('../views/LibraryView.vue'), meta: { auth: true } },
   { path: '/members', name: 'members', component: () => import('../views/MembersView.vue'), meta: { auth: true } },
   { path: '/settings', name: 'settings', component: () => import('../views/SettingsView.vue'), meta: { auth: true } },
   { path: '/:pathMatch(.*)*', name: 'not-found', component: () => import('../views/NotFoundView.vue') },
