@@ -15,6 +15,8 @@ use App\Modules\Marketplace\Http\Controllers\SellerDashboardController;
 use App\Modules\Marketplace\Http\Controllers\SellerController;
 use App\Modules\Marketplace\Http\Controllers\SellerListingController;
 use App\Modules\Media\Http\Controllers\FileController;
+use App\Modules\Media\Http\Controllers\IntegrationController;
+use App\Modules\Tenants\Http\Controllers\TenantApiKeyController;
 use App\Modules\Media\Http\Controllers\MediaController;
 use App\Modules\Media\Http\Controllers\UploadController;
 use App\Modules\Tenants\Http\Controllers\TenantController;
@@ -42,6 +44,15 @@ Route::prefix('v1')->group(function () {
         Route::get('sellers/{slug}', [CatalogController::class, 'seller']);
     });
 
+    // ---- Integração: outros sistemas leem o banco de imagens de UM projeto com a chave de API dele (somente leitura) ----
+    Route::prefix('integration')->middleware(['throttle:integration', 'tenant.key'])->group(function () {
+        Route::get('me', [IntegrationController::class, 'me']);
+        Route::get('media', [IntegrationController::class, 'index']);
+        Route::get('media/{media}', [IntegrationController::class, 'show']);
+        Route::get('media/{media}/file/{kind}', [IntegrationController::class, 'file'])->whereIn('kind', ['thumb', 'preview', 'original']);
+        Route::get('collections', [IntegrationController::class, 'collections']);
+    });
+
     // Webhooks de pagamento (sem login: autenticados pela assinatura do provedor).
     Route::post('webhooks/{gateway}', [WebhookController::class, 'handle'])->middleware('throttle:300,1')->whereAlpha('gateway');
 
@@ -66,6 +77,9 @@ Route::prefix('v1')->group(function () {
             Route::post('members', [TenantMemberController::class, 'store']);
             Route::patch('members/{userId}', [TenantMemberController::class, 'update']);
             Route::delete('members/{userId}', [TenantMemberController::class, 'destroy']);
+            Route::get('api-keys', [TenantApiKeyController::class, 'index']);
+            Route::post('api-keys', [TenantApiKeyController::class, 'store'])->middleware('throttle:20,1');
+            Route::delete('api-keys/{key}', [TenantApiKeyController::class, 'destroy']);
         });
 
         // ---- Compras ----

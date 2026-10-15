@@ -23,6 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'tenant' => ResolveTenant::class,
+            'tenant.key' => \App\Modules\Tenants\Http\Middleware\AuthenticateApiKey::class,
             'seller' => \App\Modules\Marketplace\Http\Middleware\EnsureSeller::class,
             'platform.admin' => \App\Modules\Marketplace\Http\Middleware\EnsurePlatformAdmin::class,
         ]);

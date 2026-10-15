@@ -43,6 +43,7 @@
 - **Webhook do Asaas:** o token vem no cabeçalho `asaas-access-token` e é comparado em tempo constante; sem token válido nada muda (`401` + auditoria). Eventos repetidos não geram efeito duplo.
 - **Segredos:** `ASAAS_KEY`, token do webhook e senhas do banco ficam só em arquivos de ambiente do servidor (`.env`, `.env.production`: fora do Git, permissão 600). O gateway se recusa a iniciar sem eles.
 - **Falha do provedor:** o cliente vê uma mensagem genérica; o detalhe vai só para o log do servidor.
+- **Chaves de API do projeto:** `mhk_` + 48 caracteres aleatórios; no banco só o **hash SHA-256**; a chave completa aparece uma vez; somente leitura; presa a um projeto; nunca aceita na URL; revogação e expiração valem na hora; máx. 10 ativas por projeto; só admin do projeto gerencia; auditoria de criação/revogação. Os links de imagem devolvidos são assinados e temporários, e usam `APP_URL` (nunca o host da requisição).
 - **Administradores:** os e-mails em `PLATFORM_ADMIN_EMAILS` são admins fixos (sem comando no servidor e sem poder ser rebaixados pela tela); os demais são promovidos em *Admin > Usuários*. Ninguém altera o próprio acesso e toda mudança vai para a auditoria. Quem não é admin recebe `404` nas rotas de admin.
 - **Aprovação automática:** só o admin liga, vendedor a vendedor. Os demais continuam passando pela fila de análise.
 - **CPF/CNPJ do comprador:** pedido só quando o provedor exige (Asaas), validado com dígitos verificadores, guardado criptografado e nunca devolvido pela API.

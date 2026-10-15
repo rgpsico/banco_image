@@ -63,6 +63,16 @@ e por `download-url` (2 min). Sem assinatura, adulterada ou expirada: `403`.
 Respostas de mídia **nunca** trazem caminho, disco ou ids numéricos: só `thumbnail_url`, `preview_url` e (vídeo) `stream_url` assinadas.
 
 
+## Integração com outros sistemas (chave de API do projeto)
+Guia completo com exemplos: [integration.md](integration.md).
+
+| Método | Rota | Descrição |
+|---|---|---|
+| GET/POST | `/tenants/{tenant}/api-keys` | Lista / cria chave (admin do projeto). A chave `mhk_...` completa só vem na criação |
+| DELETE | `/tenants/{tenant}/api-keys/{id}` | Revoga |
+| GET | `/integration/me` · `/media` · `/media/{id}` · `/collections` | Leitura do projeto da chave (`Authorization: Bearer mhk_...`) |
+| GET | `/integration/media/{id}/file/{thumb\|preview\|original}` | Arquivo direto (exige a chave) |
+
 ## Marketplace (Fase 3)
 
 ### Catálogo público (sem login)

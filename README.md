@@ -89,5 +89,6 @@ cota, URLs assinadas, download autorizado, pastas, marketplace, comissão, pagam
 
 - [docs/architecture.md](docs/architecture.md): módulos, multi-tenancy e decisões
 - [docs/api.md](docs/api.md): endpoints da API
+- [docs/integration.md](docs/integration.md): usar o banco de imagens em outros projetos (chave de API)
 - [docs/security.md](docs/security.md): modelo de segurança
 - [docs/roadmap.md](docs/roadmap.md): fases e pendências

@@ -57,6 +57,7 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('api', fn (Request $request) => Limit::perMinute(120)->by($request->user()?->id ?: $request->ip()));
         RateLimiter::for('uploads', fn (Request $request) => Limit::perMinute(1200)->by($request->user()?->id ?: $request->ip()));
         RateLimiter::for('market', fn (Request $request) => Limit::perMinute(300)->by($request->user()?->id ?: $request->ip()));
+        RateLimiter::for('integration', fn (Request $request) => Limit::perMinute(600)->by(sha1((string) ($request->bearerToken() ?: $request->header('X-Api-Key') ?: $request->ip()))));
         RateLimiter::for('files', fn (Request $request) => Limit::perMinute(600)->by($request->ip()));
         RateLimiter::for('auth', fn (Request $request) => Limit::perMinute(10)->by($request->ip()));
     }

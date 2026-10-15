@@ -20,6 +20,7 @@ comissão configurável (padrão 20%, por vendedor), moderação, denúncias com
 carteira, telas de admin (pedidos, reembolso, repasses, carteira do vendedor), checkout com a página de pagamento do Asaas,
 e-mails em fila (compra, venda, reembolso), disco `r2` (S3 compatível, bucket privado) e índices de desempenho, `/health`, cabeçalhos
 de segurança, imagens Docker de produção (nginx + php-fpm), trava contra `migrate:fresh` fora dos testes, suíte sem acesso à rede.
+**Também feito:** chaves de API por projeto (somente leitura) e rotas de integração para outros sistemas lerem o banco de imagens ([integration.md](integration.md)).
 **Falta:** colocar a stack de produção no ar na VPS (cutover) e usar o Asaas em produção real (hoje validado só com o sandbox);
 migrar os arquivos para um bucket R2 real; cookie HttpOnly (Sanctum SPA).
 
