@@ -57,7 +57,7 @@ services:
     volumes:
       - ./web:/app
     ports:
-      - "5180:5173"
+      - "127.0.0.1:5180:5173"   # front só em localhost; em servidor, exponha via proxy reverso com HTTPS
     environment:
       VITE_API_PROXY: http://api:8000
 
