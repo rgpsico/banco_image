@@ -94,7 +94,7 @@ Publicada: só preços e tags podem mudar. Preços em **centavos inteiros** (mí
 |---|---|---|
 | POST | `/orders` | `items: [{listing, license}]` + cabeçalho `Idempotency-Key`. Preço e comissão são calculados no servidor |
 | GET | `/orders` · `/orders/{id}` | Pedidos do próprio usuário |
-| POST | `/orders/{id}/pay` | Inicia o pagamento no gateway ativo. Resposta: `payment`, `simulated` e, no Asaas, `payment_url` (página de pagamento: Pix, boleto ou cartão). Falha do provedor → `422` sem expor detalhes |
+| POST | `/orders/{id}/pay` | Inicia o pagamento no gateway ativo. Resposta: `payment`, `simulated` e, no Asaas, `payment_url` (página de pagamento: Pix, boleto ou cartão). Com o Asaas é obrigatório o `cpf_cnpj` do comprador (validado com os dígitos verificadores, guardado **criptografado**, pedido só uma vez; sem ele `422`). Falha do provedor → `422` sem expor detalhes |
 | POST | `/orders/{id}/simulate-payment` | Confirma o pagamento **simulado** (só em `local`/`testing`) |
 | GET | `/purchases` | Itens de pedidos **pagos**, com downloads restantes |
 | POST | `/purchases/{item}/download-url` | Link assinado de 2 min do original. `403` sem pagamento, prazo vencido, limite atingido ou reembolso |

@@ -7,11 +7,14 @@ use App\Models\Order;
 use App\Modules\Orders\Http\Requests\CreateOrderRequest;
 use App\Modules\Orders\Http\Resources\OrderResource;
 use App\Modules\Orders\Services\OrderService;
+use App\Modules\Payments\Services\PaymentGatewayManager;
 use App\Modules\Payments\Services\PaymentService;
 use App\Modules\Payments\Support\WebhookEvent;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use App\Rules\CpfCnpj;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class OrderController extends Controller
 {
@@ -39,6 +42,18 @@ class OrderController extends Controller
     public function pay(Request $request, string $order, PaymentService $payments): JsonResponse
     {
         $model = $this->mine($request, $order);
+
+        // Provedores como o Asaas exigem o CPF/CNPJ do comprador. Pedimos uma vez e guardamos criptografado.
+        if (app(PaymentGatewayManager::class)->active()->requiresBuyerTaxId()) {
+            $user = $request->user();
+            $v = $request->validate(['cpf_cnpj' => [Rule::requiredIf(blank($user->cpf_cnpj)), 'nullable', 'string', new CpfCnpj]],
+                ['cpf_cnpj.required' => 'Informe seu CPF ou CNPJ para pagar.']);
+
+            if (! empty($v['cpf_cnpj'])) {
+                $user->forceFill(['cpf_cnpj' => CpfCnpj::digits($v['cpf_cnpj'])])->save();
+            }
+        }
+
         $payment = $payments->start($model);
 
         return response()->json(['data' => [

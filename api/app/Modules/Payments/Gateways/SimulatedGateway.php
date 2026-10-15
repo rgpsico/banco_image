@@ -29,6 +29,11 @@ class SimulatedGateway implements PaymentGatewayInterface
         return 'simulated';
     }
 
+    public function requiresBuyerTaxId(): bool
+    {
+        return false;
+    }
+
     public function supportsSplit(): bool
     {
         return false; // repasse manual no ambiente de testes

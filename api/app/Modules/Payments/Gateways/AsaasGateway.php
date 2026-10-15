@@ -39,6 +39,11 @@ class AsaasGateway implements PaymentGatewayInterface
         return 'asaas';
     }
 
+    public function requiresBuyerTaxId(): bool
+    {
+        return true; // o Asaas recusa a cobrança sem CPF/CNPJ do cliente
+    }
+
     public function supportsSplit(): bool
     {
         return true;
@@ -77,7 +82,7 @@ class AsaasGateway implements PaymentGatewayInterface
         $res = $this->http()->post('/payments', $body);
 
         if (! $res->successful() || ! $res->json('id')) {
-            throw new \RuntimeException('Asaas recusou a cobrança (HTTP ' . $res->status() . ').');
+            throw new \RuntimeException('Asaas recusou a cobrança (HTTP ' . $res->status() . ')' . $this->why($res) . '.');
         }
 
         return new ChargeResult((string) $res->json('id'), $res->json('invoiceUrl'), ['asaas_status' => $res->json('status')]);
@@ -88,14 +93,21 @@ class AsaasGateway implements PaymentGatewayInterface
     {
         $buyer = $order->buyer;
 
+        $data = array_filter(['name' => $buyer->name, 'email' => $buyer->email, 'externalReference' => $buyer->ulid, 'cpfCnpj' => $buyer->cpf_cnpj]);
+
         if ($buyer->asaas_customer_id) {
+            // cliente criado antes de termos o documento (ou documento corrigido): atualiza no Asaas
+            if ($buyer->cpf_cnpj) {
+                $this->http()->post("/customers/{$buyer->asaas_customer_id}", ['cpfCnpj' => $buyer->cpf_cnpj]);
+            }
+
             return $buyer->asaas_customer_id;
         }
 
-        $res = $this->http()->post('/customers', ['name' => $buyer->name, 'email' => $buyer->email, 'externalReference' => $buyer->ulid]);
+        $res = $this->http()->post('/customers', $data);
 
         if (! $res->successful() || ! $res->json('id')) {
-            throw new \RuntimeException('Asaas recusou o cadastro do cliente (HTTP ' . $res->status() . ').');
+            throw new \RuntimeException('Asaas recusou o cadastro do cliente (HTTP ' . $res->status() . ')' . $this->why($res) . '.');
         }
 
         $buyer->forceFill(['asaas_customer_id' => $res->json('id')])->save();
@@ -108,7 +120,7 @@ class AsaasGateway implements PaymentGatewayInterface
         $res = $this->http()->post("/payments/{$payment->gateway_reference}/refund", ['description' => 'Reembolso solicitado pela plataforma']);
 
         if (! $res->successful()) {
-            throw new \RuntimeException('Asaas recusou o reembolso (HTTP ' . $res->status() . ').');
+            throw new \RuntimeException('Asaas recusou o reembolso (HTTP ' . $res->status() . ')' . $this->why($res) . '.');
         }
     }
 
@@ -133,6 +145,14 @@ class AsaasGateway implements PaymentGatewayInterface
         $eventId = (string) ($body['id'] ?? hash('sha256', $event . '|' . $paymentId));
 
         return new WebhookEvent($eventId, self::EVENT_MAP[$event] ?? 'ignored', (string) $paymentId);
+    }
+
+    /** Descrições de erro devolvidas pelo Asaas (vão só para o log do servidor, nunca para o cliente). */
+    private function why($res): string
+    {
+        $errors = collect($res->json('errors') ?? [])->pluck('description')->filter()->implode('; ');
+
+        return $errors !== '' ? ' - ' . mb_substr($errors, 0, 300) : '';
     }
 
     private function reais(int $cents): float

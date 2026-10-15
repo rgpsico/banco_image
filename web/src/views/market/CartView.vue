@@ -6,6 +6,7 @@ import { useAuthStore } from '../../stores/auth'
 import { useCartStore } from '../../stores/cart'
 import { formatMoney } from '../../utils/format'
 import FormAlert from '../../components/FormAlert.vue'
+import FormField from '../../components/FormField.vue'
 import LoadingButton from '../../components/LoadingButton.vue'
 
 const auth = useAuthStore()
@@ -16,6 +17,9 @@ const busy = ref(false)
 const error = ref('')
 const order = ref(null) // pedido criado, aguardando o pagamento
 const pay = ref(null) // resposta do /pay: { simulated, payment_url }
+const needTaxId = ref(false) // o provedor (Asaas) exige CPF/CNPJ do comprador
+const taxId = ref('')
+const taxError = ref('')
 const status = ref('pending') // acompanhado enquanto o cliente paga na página do provedor
 let timer = null
 
@@ -49,8 +53,26 @@ async function checkout() {
     // Idempotency-Key: se o clique se repetir, o servidor devolve o MESMO pedido.
     const { data } = await api.post('/orders', { items }, { headers: { 'Idempotency-Key': cart.key() } })
     order.value = data.data
-    pay.value = (await api.post(`/orders/${order.value.id}/pay`)).data.data
+    await startPayment()
   } catch (e) { error.value = parseError(e).message } finally { busy.value = false }
+}
+
+// Inicia o pagamento. Se o provedor exigir CPF/CNPJ e ainda não temos, mostra o campo e espera o comprador informar.
+async function startPayment() {
+  taxError.value = ''
+  try {
+    pay.value = (await api.post(`/orders/${order.value.id}/pay`, taxId.value ? { cpf_cnpj: taxId.value } : {})).data.data
+    needTaxId.value = false
+  } catch (e) {
+    const err = parseError(e)
+    if (e.response?.status === 422 && err.fields.cpf_cnpj) { needTaxId.value = true; taxError.value = taxId.value ? err.fields.cpf_cnpj : '' }
+    else throw e
+  }
+}
+
+async function submitTaxId() {
+  busy.value = true; error.value = ''
+  try { await startPayment() } catch (e) { error.value = parseError(e).message } finally { busy.value = false }
 }
 
 async function confirmSimulated() {
@@ -99,14 +121,19 @@ async function confirmSimulated() {
           <ul class="mb-3">
             <li v-for="it in order.items" :key="it.id">{{ it.title }} · {{ it.license_name }} · {{ formatMoney(it.price_cents) }}</li>
           </ul>
-          <LoadingButton v-if="pay?.simulated" type="button" :loading="busy" variant="success" @click="confirmSimulated">Confirmar pagamento de teste · {{ formatMoney(order.total_cents) }}</LoadingButton>
+          <form v-if="needTaxId" class="mb-2" @submit.prevent="submitTaxId">
+            <p class="small">Para emitir a cobrança, o provedor de pagamento precisa do seu <strong>CPF ou CNPJ</strong>. Guardamos criptografado e usamos só para o pagamento.</p>
+            <FormField v-model="taxId" label="CPF ou CNPJ" autocomplete="off" :error="taxError" required />
+            <LoadingButton type="submit" :loading="busy">Continuar para o pagamento</LoadingButton>
+          </form>
+          <LoadingButton v-else-if="pay?.simulated" type="button" :loading="busy" variant="success" @click="confirmSimulated">Confirmar pagamento de teste · {{ formatMoney(order.total_cents) }}</LoadingButton>
           <template v-else-if="pay?.payment_url">
             <button type="button" class="btn btn-success" @click="openPayment">Pagar {{ formatMoney(order.total_cents) }} (Pix, boleto ou cartão)</button>
             <p v-if="status === 'pending' && timer" class="small text-muted mt-3 mb-0"><span class="spinner-border spinner-border-sm me-1"></span>Aguardando a confirmação do pagamento… Esta página atualiza sozinha.</p>
             <p v-else-if="status !== 'pending'" class="small text-danger mt-3 mb-0">Este pedido não está mais disponível para pagamento ({{ status }}). Faça um novo pedido.</p>
             <p class="form-text mt-2 mb-0">O pagamento acontece na página segura do Asaas. Você recebe o arquivo original assim que ele confirmar.</p>
           </template>
-          <p v-else class="text-danger small mb-0">Não foi possível obter a página de pagamento. Tente novamente em instantes.</p>
+          <p v-if="!needTaxId && !pay" class="text-danger small mb-0">Não foi possível obter a página de pagamento. Tente novamente em instantes.</p>
         </div>
       </div>
     </div>

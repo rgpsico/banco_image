@@ -19,6 +19,9 @@ interface PaymentGatewayInterface
     /** O gateway reparte o valor entre plataforma e vendedores no momento do pagamento (split)? */
     public function supportsSplit(): bool;
 
+    /** O provedor exige CPF/CNPJ do comprador para cobrar? */
+    public function requiresBuyerTaxId(): bool;
+
     /** Cria a cobrança no provedor e devolve a referência dele. */
     public function createCharge(Order $order, Payment $payment): ChargeResult;
 

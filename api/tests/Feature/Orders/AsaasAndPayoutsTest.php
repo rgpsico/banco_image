@@ -74,7 +74,7 @@ class AsaasAndPayoutsTest extends TestCase
         $buyer = User::factory()->create();
         $id = $this->placeOrder($buyer, [[$listing, 'commercial']])->json('data.id');
 
-        $this->postJson("/api/v1/orders/{$id}/pay")->assertOk()->assertJsonPath('data.payment_url', 'https://asaas.test/i/pay_1');
+        $this->postJson("/api/v1/orders/{$id}/pay", ["cpf_cnpj" => "529.982.247-25"])->assertOk()->assertJsonPath('data.payment_url', 'https://asaas.test/i/pay_1');
 
         Http::assertSent(function ($r) {
             if (! str_ends_with($r->url(), '/v3/payments')) {
@@ -89,12 +89,51 @@ class AsaasAndPayoutsTest extends TestCase
         $this->assertSame('cus_1', $buyer->fresh()->asaas_customer_id);
     }
 
+    public function test_asaas_requires_a_valid_cpf_or_cnpj_stores_it_encrypted_and_sends_it_to_the_provider(): void
+    {
+        $this->useAsaas();
+        $buyer = User::factory()->create();
+        $id = $this->placeOrder($buyer, [[$this->makeListing(), 'commercial']])->json('data.id');
+
+        $this->postJson("/api/v1/orders/{$id}/pay")->assertStatus(422)->assertJsonValidationErrors('cpf_cnpj');
+        $this->postJson("/api/v1/orders/{$id}/pay", ['cpf_cnpj' => '111.111.111-11'])->assertStatus(422)->assertJsonValidationErrors('cpf_cnpj'); // dígitos iguais
+        $this->postJson("/api/v1/orders/{$id}/pay", ['cpf_cnpj' => '529.982.247-24'])->assertStatus(422)->assertJsonValidationErrors('cpf_cnpj'); // dígito verificador errado
+        Http::assertNothingSent();
+
+        $this->postJson("/api/v1/orders/{$id}/pay", ['cpf_cnpj' => '529.982.247-25'])->assertOk();
+
+        Http::assertSent(fn ($r) => str_ends_with($r->url(), '/v3/customers') && $r->data()['cpfCnpj'] === '52998224725');
+        $raw = \Illuminate\Support\Facades\DB::table('users')->where('id', $buyer->id)->value('cpf_cnpj');
+        $this->assertStringNotContainsString('52998224725', $raw); // no banco fica criptografado
+        $this->assertSame('52998224725', $buyer->fresh()->cpf_cnpj);
+        $this->assertStringNotContainsString('52998224725', $this->getJson('/api/v1/auth/me')->getContent()); // nunca aparece nas respostas
+
+        // próximos pagamentos não pedem de novo
+        $this->postJson("/api/v1/orders/{$id}/pay")->assertOk();
+    }
+
+    public function test_cpf_and_cnpj_validation_rule(): void
+    {
+        foreach (['529.982.247-25', '52998224725', '11.222.333/0001-81'] as $ok) {
+            $this->assertTrue(\App\Rules\CpfCnpj::isValid($ok), $ok);
+        }
+        foreach (['', '123', '000.000.000-00', '529.982.247-24', '11.222.333/0001-80', 'abc'] as $bad) {
+            $this->assertFalse(\App\Rules\CpfCnpj::isValid($bad), $bad);
+        }
+    }
+
+    public function test_the_simulated_gateway_does_not_ask_for_a_tax_id(): void
+    {
+        $id = $this->placeOrder(User::factory()->create(), [[$this->makeListing(), 'commercial']])->json('data.id');
+        $this->postJson("/api/v1/orders/{$id}/pay")->assertOk()->assertJsonPath('data.simulated', true);
+    }
+
     public function test_sellers_without_a_wallet_get_no_split_and_are_paid_manually(): void
     {
         $this->useAsaas();
         $listing = $this->makeListing(null, [], ['commercial' => 1000]);
         $id = $this->placeOrder(User::factory()->create(), [[$listing, 'commercial']])->json('data.id');
-        $this->postJson("/api/v1/orders/{$id}/pay")->assertOk();
+        $this->postJson("/api/v1/orders/{$id}/pay", ["cpf_cnpj" => "529.982.247-25"])->assertOk();
 
         Http::assertSent(fn ($r) => str_ends_with($r->url(), '/v3/payments') && ! array_key_exists('split', $r->data()));
         $this->assertSame('pending', OrderItem::first()->payout_status);
@@ -106,7 +145,7 @@ class AsaasAndPayoutsTest extends TestCase
         $this->useAsaas();
         $id = $this->placeOrder(User::factory()->create(), [[$this->makeListing(), 'commercial']])->json('data.id');
 
-        $res = $this->postJson("/api/v1/orders/{$id}/pay")->assertStatus(422)->assertJsonValidationErrors('order');
+        $res = $this->postJson("/api/v1/orders/{$id}/pay", ["cpf_cnpj" => "529.982.247-25"])->assertStatus(422)->assertJsonValidationErrors('order');
         $this->assertStringNotContainsString('segredo', $res->getContent());
         $this->assertSame(0, Payment::count());
     }
@@ -118,7 +157,7 @@ class AsaasAndPayoutsTest extends TestCase
         $listing = $this->makeListing();
         $buyer = User::factory()->create();
         $id = $this->placeOrder($buyer, [[$listing, 'commercial']])->json('data.id');
-        $this->postJson("/api/v1/orders/{$id}/pay")->assertOk();
+        $this->postJson("/api/v1/orders/{$id}/pay", ["cpf_cnpj" => "529.982.247-25"])->assertOk();
         $body = ['id' => 'evt_1', 'event' => 'PAYMENT_CONFIRMED', 'payment' => ['id' => 'pay_1']];
 
         $this->asaasWebhook($body, 'errado')->assertUnauthorized();
@@ -140,7 +179,7 @@ class AsaasAndPayoutsTest extends TestCase
         $this->useAsaas();
         $buyer = User::factory()->create();
         $id = $this->placeOrder($buyer, [[$this->makeListing(), 'commercial']])->json('data.id');
-        $this->postJson("/api/v1/orders/{$id}/pay")->assertOk();
+        $this->postJson("/api/v1/orders/{$id}/pay", ["cpf_cnpj" => "529.982.247-25"])->assertOk();
         $this->asaasWebhook(['id' => 'evt_1', 'event' => 'PAYMENT_CONFIRMED', 'payment' => ['id' => 'pay_1']])->assertOk();
 
         Sanctum::actingAs($buyer);
@@ -165,7 +204,7 @@ class AsaasAndPayoutsTest extends TestCase
         $this->postJson("/api/v1/admin/orders/{$id}/refund")->assertStatus(422); // pendente
 
         Sanctum::actingAs(\App\Models\Order::first()->buyer);
-        $this->postJson("/api/v1/orders/{$id}/pay")->assertOk();
+        $this->postJson("/api/v1/orders/{$id}/pay", ["cpf_cnpj" => "529.982.247-25"])->assertOk();
         $this->asaasWebhook(['id' => 'evt_1', 'event' => 'PAYMENT_CONFIRMED', 'payment' => ['id' => 'pay_1']])->assertOk();
 
         Sanctum::actingAs($this->admin());
