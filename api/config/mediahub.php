@@ -30,6 +30,7 @@ return [
 
     // Proteção contra imagens "bomba" (poucos KB, bilhões de pixels).
     'max_pixels' => 50_000_000,
+    'processing_memory_mb' => (int) env('MEDIA_PROCESSING_MEMORY_MB', 1024), // teto de memória para decodificar uma imagem
 
     // Variantes geradas para imagens (lado maior em px).
     'variants' => ['thumb' => 400, 'preview' => 1600],

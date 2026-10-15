@@ -18,6 +18,16 @@ class GenerateMediaVariants implements ShouldQueue
     {
     }
 
+    /** Se o job morrer (falta de memória, tempo esgotado...), a mídia não pode ficar "processando" para sempre. */
+    public function failed(?\Throwable $e): void
+    {
+        $media = Media::withoutGlobalScope('tenant')->find($this->mediaId);
+
+        if ($media && $media->status === \App\Enums\MediaStatus::Processing) {
+            $media->update(['status' => \App\Enums\MediaStatus::Failed]);
+        }
+    }
+
     public function handle(MediaProcessor $processor): void
     {
         // Job roda fora de uma requisição (sem tenant atual): busca explicitamente sem o filtro.

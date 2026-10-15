@@ -98,6 +98,11 @@ class MediaProcessor
     /** Gera thumb/preview a partir de um arquivo de imagem local. */
     private function buildVariants(Media $media, string $localImage, string $mime): void
     {
+        $size = @getimagesize($localImage);
+        if ($size) {
+            $this->ensureMemoryFor((int) $size[0], (int) $size[1]);
+        }
+
         $image = $this->load($localImage, $mime);
         $image = $this->fixOrientation($image, $localImage, $mime);
 
@@ -106,6 +111,44 @@ class MediaProcessor
         }
 
         imagedestroy($image);
+    }
+
+    /**
+     * O GD descompacta a imagem inteira na memória (4 bytes por pixel) e ainda faz cópias ao girar/redimensionar:
+     * uma foto de 24 MP passa de 250 MB. Sobe o limite do processo só o necessário, até um teto configurável;
+     * acima disso recusa com mensagem clara em vez de derrubar o processo.
+     */
+    public function ensureMemoryFor(int $width, int $height): void
+    {
+        $needed = (int) ($width * $height * 4 * 2.6) + 64 * 1024 * 1024;
+        $cap = (int) config('mediahub.processing_memory_mb', 1024) * 1024 * 1024;
+        $current = $this->memoryLimitBytes();
+
+        if ($current === -1 || $current >= $needed) {
+            return;
+        }
+
+        if ($needed > $cap) {
+            throw new \RuntimeException("Imagem de {$width}x{$height} grande demais para processar.");
+        }
+
+        ini_set('memory_limit', (string) $needed);
+    }
+
+    private function memoryLimitBytes(): int
+    {
+        $v = trim((string) ini_get('memory_limit'));
+        if ($v === '-1') {
+            return -1;
+        }
+        $n = (int) $v;
+
+        return match (strtolower(substr($v, -1))) {
+            'g' => $n * 1024 ** 3,
+            'm' => $n * 1024 ** 2,
+            'k' => $n * 1024,
+            default => $n,
+        };
     }
 
     private function load(string $path, string $mime): \GdImage
