@@ -15,15 +15,20 @@ filtros e ordenação, carrinho e checkout, `PaymentGatewayInterface` + gateway 
 comissão configurável (padrão 20%, por vendedor), moderação, denúncias com suspensão automática, direitos autorais e autorização de imagem, painel do vendedor
 (vendas, estatísticas, comissões por mês), administração de vendedores. Miniatura e duração de vídeo com ffmpeg. 144 testes automatizados.
 
-## Fase 4: Produção
-Testes ampliados, endurecimento de segurança (cookie HttpOnly), filas, otimização, Cloudflare R2 (S3 compatível), gateway Asaas
-(webhooks com validação e idempotência), miniatura de vídeo (ffmpeg), documentação de deploy.
+## Fase 4: Produção (em andamento)
+**Feito:** gateway Asaas (cobrança com split por carteira, webhook autenticado e idempotente, reembolso), repasse manual para quem não tem
+carteira, telas de admin (pedidos, reembolso, repasses, carteira do vendedor), checkout com a página de pagamento do Asaas,
+e-mails em fila (compra, venda, reembolso), disco `r2` (S3 compatível, bucket privado) e índices de desempenho, `/health`, cabeçalhos
+de segurança, imagens Docker de produção (nginx + php-fpm), trava contra `migrate:fresh` fora dos testes, suíte sem acesso à rede.
+**Falta:** colocar a stack de produção no ar na VPS (cutover) e usar o Asaas em produção real (hoje validado só com o sandbox);
+migrar os arquivos para um bucket R2 real; cookie HttpOnly (Sanctum SPA).
 
 ## Pendências conhecidas
-- **Pagamento real e repasse (split) pelo Asaas**, com subconta por vendedor e webhook de produção (Fase 4). Hoje a comissão é calculada e guardada, mas o repasse é manual.
-- Reembolso iniciado pelo administrador (hoje só por evento do gateway) e extrato de repasses.
+- **Asaas em produção real:** o código está pronto e coberto por testes com respostas simuladas; falta validar a ponta a ponta com a conta de produção
+  (chave, token de webhook, carteira de cada vendedor) depois do sandbox. Sem carteira, o repasse é manual (aba *Repasses*).
+- Extrato de repasses por período e conciliação com o extrato do Asaas.
 - Prévia de vídeo animada (hoje só um quadro com marca d'água) e downloads de vários itens num ZIP.
-- Notificações por e-mail (venda, aprovação, recusa).
+- E-mails de aprovação e recusa de publicação (compra, venda e reembolso já existem).
 - Moderação com histórico de decisões e recurso do vendedor.
 - Mover mídia entre pastas por arrastar e soltar; seleção em lote.
 - Convite por e-mail e verificação de e-mail no cadastro.

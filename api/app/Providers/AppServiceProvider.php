@@ -14,6 +14,7 @@ use App\Modules\Tenants\Support\CurrentTenant;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
@@ -31,6 +32,10 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // Proteção do banco: migrate:fresh/refresh/reset e db:wipe apagam TUDO. Só rodam nos testes (APP_ENV=testing)
+        // ou se alguém liberar de propósito com ALLOW_DESTRUCTIVE_DB=true.
+        DB::prohibitDestructiveCommands(! $this->app->environment('testing') && ! filter_var(env('ALLOW_DESTRUCTIVE_DB', false), FILTER_VALIDATE_BOOL));
+
         Gate::policy(Tenant::class, TenantPolicy::class);
         Gate::policy(Media::class, MediaPolicy::class);
         Gate::policy(Collection::class, CollectionPolicy::class);

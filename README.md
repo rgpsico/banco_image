@@ -24,7 +24,8 @@ configurável (padrão 20%, ajustável por vendedor). Há painel de vendas e rel
 |---|---|
 | API | PHP 8.4, Laravel 13, MySQL 8, Sanctum, Policies, Queues |
 | Front-end | Vue 3 (Composition API), Vite, Pinia, Vue Router, Axios, Bootstrap 5 |
-| Armazenamento | Disco local do Laravel (fase 1), com camada de abstração para Cloudflare R2/S3 (fase 4) |
+| Armazenamento | Disco local do Laravel, com camada de abstração e disco `r2` (Cloudflare R2/S3) pronto para uso |
+| Pagamentos | Gateway simulado (testes) e Asaas (Pix, boleto, cartão, com split por vendedor) |
 | Ambiente | Docker Compose (MySQL, API, fila, Vite, Mailpit) |
 
 ## Estrutura

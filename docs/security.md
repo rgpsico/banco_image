@@ -38,10 +38,22 @@
 - **Privacidade:** o vendedor vê o comprador só pelo primeiro nome; o comprador não vê comissão nem ganhos.
 - **Vendedor não compra o que é seu**; não recompra a mesma licença já paga.
 
+## Pagamentos, produção e dados (Fase 4)
+
+- **Webhook do Asaas:** o token vem no cabeçalho `asaas-access-token` e é comparado em tempo constante; sem token válido nada muda (`401` + auditoria). Eventos repetidos não geram efeito duplo.
+- **Segredos:** `ASAAS_KEY`, token do webhook e senhas do banco ficam só em arquivos de ambiente do servidor (`.env`, `.env.production`: fora do Git, permissão 600). O gateway se recusa a iniciar sem eles.
+- **Falha do provedor:** o cliente vê uma mensagem genérica; o detalhe vai só para o log do servidor.
+- **Carteira Asaas do vendedor:** campo oculto em todas as respostas; só o admin define, com validação de formato.
+- **Gateway simulado:** recusa-se a rodar em `production` e fora dos ambientes listados em `PAYMENT_SIMULATED_ENVS`.
+- **Cabeçalhos:** `nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy`, `Permissions-Policy`, CSP e HSTS no nginx de produção, `Cache-Control: no-store` nas respostas JSON autenticadas.
+- **Banco:** `migrate:fresh`, `refresh`, `reset` e `db:wipe` ficam **bloqueados** fora do ambiente de testes (liberação consciente: `ALLOW_DESTRUCTIVE_DB=true`). A suíte de testes recusa rodar em banco cujo nome não termina em `_test` e não acessa a internet.
+- **Binlog do MySQL** fica ligado (30 dias): permite recuperar o banco ponto a ponto. Faça backup (`mysqldump`) antes de qualquer operação destrutiva.
+- **Armazenamento R2:** bucket **privado**; nada é público, os arquivos só saem pelo MediaHub com link assinado e permissão checada.
+
 ## Decisão a revisitar
 
 O front guarda o token em `localStorage` (simples e adequado ao MVP). Um XSS poderia roubá-lo. Alternativa mais forte:
-cookie HttpOnly via modo SPA do Sanctum (mesmo domínio ou subdomínios). Entra na Fase 4.
+cookie HttpOnly via modo SPA do Sanctum (mesmo domínio ou subdomínios). Ainda **não implementado**: continua pendente.
 
 ## Fases seguintes
 

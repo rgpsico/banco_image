@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { onBeforeUnmount, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import api, { parseError } from '../../services/api'
 import { useAuthStore } from '../../stores/auth'
@@ -15,6 +15,30 @@ const route = useRoute()
 const busy = ref(false)
 const error = ref('')
 const order = ref(null) // pedido criado, aguardando o pagamento
+const pay = ref(null) // resposta do /pay: { simulated, payment_url }
+const status = ref('pending') // acompanhado enquanto o cliente paga na página do provedor
+let timer = null
+
+function stopWatching() { if (timer) { clearInterval(timer); timer = null } }
+onBeforeUnmount(stopWatching)
+
+// Depois de abrir a página de pagamento do provedor, confere o pedido a cada 5 s até o webhook confirmá-lo.
+function watchOrder() {
+  stopWatching()
+  timer = setInterval(async () => {
+    try {
+      const { data } = await api.get(`/orders/${order.value.id}`)
+      status.value = data.data.status
+      if (status.value === 'paid') { stopWatching(); cart.clear(); router.push({ name: 'purchases', query: { novo: '1' } }) }
+      else if (['expired', 'cancelled', 'refunded'].includes(status.value)) stopWatching()
+    } catch { /* tenta de novo no próximo ciclo */ }
+  }, 5000)
+}
+
+function openPayment() {
+  window.open(pay.value.payment_url, '_blank', 'noopener,noreferrer')
+  watchOrder()
+}
 
 async function checkout() {
   error.value = ''
@@ -25,7 +49,7 @@ async function checkout() {
     // Idempotency-Key: se o clique se repetir, o servidor devolve o MESMO pedido.
     const { data } = await api.post('/orders', { items }, { headers: { 'Idempotency-Key': cart.key() } })
     order.value = data.data
-    await api.post(`/orders/${order.value.id}/pay`)
+    pay.value = (await api.post(`/orders/${order.value.id}/pay`)).data.data
   } catch (e) { error.value = parseError(e).message } finally { busy.value = false }
 }
 
@@ -69,14 +93,20 @@ async function confirmSimulated() {
       <div v-else class="card shadow-sm border-warning">
         <div class="card-body">
           <h2 class="h6">Pedido criado · aguardando pagamento</h2>
-          <div class="alert alert-warning small">
+          <div v-if="pay?.simulated" class="alert alert-warning small">
             <strong>Pagamento de teste.</strong> Este ambiente usa um gateway simulado: nenhum valor real é cobrado.
-            O pagamento real (Pix/cartão pelo Asaas) entra na fase de produção.
           </div>
           <ul class="mb-3">
             <li v-for="it in order.items" :key="it.id">{{ it.title }} · {{ it.license_name }} · {{ formatMoney(it.price_cents) }}</li>
           </ul>
-          <LoadingButton type="button" :loading="busy" variant="success" @click="confirmSimulated">Confirmar pagamento de teste · {{ formatMoney(order.total_cents) }}</LoadingButton>
+          <LoadingButton v-if="pay?.simulated" type="button" :loading="busy" variant="success" @click="confirmSimulated">Confirmar pagamento de teste · {{ formatMoney(order.total_cents) }}</LoadingButton>
+          <template v-else-if="pay?.payment_url">
+            <button type="button" class="btn btn-success" @click="openPayment">Pagar {{ formatMoney(order.total_cents) }} (Pix, boleto ou cartão)</button>
+            <p v-if="status === 'pending' && timer" class="small text-muted mt-3 mb-0"><span class="spinner-border spinner-border-sm me-1"></span>Aguardando a confirmação do pagamento… Esta página atualiza sozinha.</p>
+            <p v-else-if="status !== 'pending'" class="small text-danger mt-3 mb-0">Este pedido não está mais disponível para pagamento ({{ status }}). Faça um novo pedido.</p>
+            <p class="form-text mt-2 mb-0">O pagamento acontece na página segura do Asaas. Você recebe o arquivo original assim que ele confirmar.</p>
+          </template>
+          <p v-else class="text-danger small mb-0">Não foi possível obter a página de pagamento. Tente novamente em instantes.</p>
         </div>
       </div>
     </div>

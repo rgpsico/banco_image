@@ -94,17 +94,32 @@ Publicada: só preços e tags podem mudar. Preços em **centavos inteiros** (mí
 |---|---|---|
 | POST | `/orders` | `items: [{listing, license}]` + cabeçalho `Idempotency-Key`. Preço e comissão são calculados no servidor |
 | GET | `/orders` · `/orders/{id}` | Pedidos do próprio usuário |
-| POST | `/orders/{id}/pay` | Inicia o pagamento no gateway ativo |
+| POST | `/orders/{id}/pay` | Inicia o pagamento no gateway ativo. Resposta: `payment`, `simulated` e, no Asaas, `payment_url` (página de pagamento: Pix, boleto ou cartão). Falha do provedor → `422` sem expor detalhes |
 | POST | `/orders/{id}/simulate-payment` | Confirma o pagamento **simulado** (só em `local`/`testing`) |
 | GET | `/purchases` | Itens de pedidos **pagos**, com downloads restantes |
 | POST | `/purchases/{item}/download-url` | Link assinado de 2 min do original. `403` sem pagamento, prazo vencido, limite atingido ou reembolso |
 | GET | `/files/purchase/{grant}/download` | Entrega do original (URL assinada; revalida pagamento) |
 
 ### Webhooks
-`POST /webhooks/{gateway}` (só o gateway ativo). Assinatura validada antes de qualquer efeito (`401` se inválida) e processamento **idempotente**
-por `event_id`. Eventos: `payment.confirmed`, `payment.failed`, `payment.refunded`.
+`POST /webhooks/{gateway}` (só o gateway ativo; os demais respondem `404`). Autenticação validada antes de qualquer efeito (`401` se inválida) e processamento **idempotente**
+por `event_id`. Eventos normalizados: `payment.confirmed`, `payment.failed`, `payment.refunded`.
+- `simulated`: assinatura HMAC no cabeçalho `X-Signature`.
+- `asaas`: o token configurado no webhook do painel Asaas chega no cabeçalho `asaas-access-token` e é comparado com `ASAAS_WEBHOOK_TOKEN`
+  (`hash_equals`). Mapeamento: `PAYMENT_CONFIRMED`/`PAYMENT_RECEIVED` → confirmado; `PAYMENT_REFUNDED` → reembolsado;
+  `PAYMENT_OVERDUE`/`PAYMENT_DELETED`/`PAYMENT_CREDIT_CARD_CAPTURE_REFUSED` → falhou. Outros eventos são ignorados com `200`.
+
+### Saúde
+`GET /health` → `{"status":"ok"}` (ou `503` com `degraded` se o banco não responder). Sem autenticação e sem dados internos.
 
 ### Moderação (administrador da plataforma; para os demais, `404`)
 `GET /admin/listings?status=` · `GET /admin/listings/{id}` · `POST .../approve` · `POST .../reject` e `.../suspend` (`reason`) ·
 `GET /admin/reports` · `POST /admin/reports/{id}/resolve` (`action: dismiss|suspend_listing`) ·
-`GET /admin/sellers` · `PATCH /admin/sellers/{slug}` (`status`, `commission_bps` 0–5000 ou `null` para o padrão).
+`GET /admin/sellers` · `PATCH /admin/sellers/{slug}` (`status`, `commission_bps` 0–5000 ou `null` para o padrão, `asaas_wallet_id` — carteira Asaas para o split; só letras, números e hífen; nunca aparece em respostas públicas ou do vendedor).
+
+### Pedidos e repasses (administrador)
+| Método | Rota | Descrição |
+|---|---|---|
+| GET | `/admin/orders?status=` | Pedidos com comprador, itens, comissão e gateway |
+| POST | `/admin/orders/{id}/refund` | Reembolso: avisa o provedor, revoga os downloads e avisa o comprador por e-mail. `422` se não estiver pago ou se o provedor recusar |
+| GET | `/admin/payouts` | O que falta repassar **manualmente**, por vendedor (vendas pagas, sem split e ainda não repassadas) |
+| POST | `/admin/payouts/{slug}/mark-paid` | Registra o repasse manual (`note` opcional) |

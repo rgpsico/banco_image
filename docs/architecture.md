@@ -67,7 +67,7 @@ O catálogo só serve essas duas variantes. Vídeo ganha prévia a partir de um 
 `seller_earning_cents`), então mudar a comissão depois não altera vendas passadas. O comprador paga o preço de vitrine; a comissão sai da parte do vendedor.
 
 **Pagamento:** `PaymentGatewayInterface` (`createCharge`, `parseWebhook`). Existe o `SimulatedGateway` (recusa-se a funcionar fora de `local`/`testing`).
-O Asaas entra na Fase 4 com a mesma interface. Todo evento (webhook real ou confirmação simulada) passa por `PaymentService::handle`:
+O `AsaasGateway` implementa a mesma interface (`supportsSplit`, `createCharge`, `refund`, `parseWebhook`). Com carteira cadastrada, a cobrança leva o `split` (a parte do vendedor); sem ela o item fica `payout_status = pending` para repasse manual. Todo evento (webhook real ou confirmação simulada) passa por `PaymentService::handle`:
 transação com lock, idempotente, cria os `download_grants` e conta a venda.
 
 **Download:** só existe `download_grant` depois do pagamento confirmado; limite (10), prazo (365 dias), revogação em reembolso. O link é assinado e dura 2 minutos,
