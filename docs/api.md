@@ -61,3 +61,50 @@ Exige URL **assinada** (parâmetros `expires` e `signature`), emitida pela API n
 e por `download-url` (2 min). Sem assinatura, adulterada ou expirada: `403`.
 
 Respostas de mídia **nunca** trazem caminho, disco ou ids numéricos: só `thumbnail_url`, `preview_url` e (vídeo) `stream_url` assinadas.
+
+
+## Marketplace (Fase 3)
+
+### Catálogo público (sem login)
+| Método | Rota | Descrição |
+|---|---|---|
+| GET | `/market/listings` | `?q=`, `?type=`, `?category=`, `?tag=`, `?seller=<slug>`, `?min_price=`/`?max_price=` (centavos), `?sort=newest\|popular\|price_asc\|price_desc`, `?per_page=` (≤48) |
+| GET | `/market/listings/{id}` | Detalhe (título, licenças e preços, vendedor, prévia). Nunca expõe ids internos, caminhos ou o original |
+| GET | `/market/listings/{id}/image/{thumb\|large}` | **Somente** a prévia com marca d'água de publicações publicadas |
+| GET | `/market/categories` · `/market/licenses` | Categorias (com contagem) e licenças ativas |
+| GET | `/market/sellers/{slug}` | Perfil público do vendedor (vendedores suspensos: 404) |
+| POST | `/market/listings/{id}/reports` | Denúncia (logado, uma por pessoa). `reason`: copyright, inappropriate, misleading, other |
+
+### Vendedor (logado)
+| Método | Rota | Descrição |
+|---|---|---|
+| GET | `/seller/status` | Perfil de vendedor do usuário (ou `null`) |
+| POST | `/seller/join` | `display_name`, `bio?`, `accept_terms` |
+| GET/PATCH | `/seller/profile` | Perfil |
+| GET/POST | `/seller/listings` | Lista / cria rascunho (`media_id` + título, descrição, categoria, tags, `prices[{license, price_cents}]`, `has_people`, `model_release_confirmed`, `rights_declared`) |
+| GET/PATCH/DELETE | `/seller/listings/{id}` | Detalhe / editar / excluir (só sem vendas e fora do ar) |
+| POST | `/seller/listings/{id}/submit` | Envia à moderação (valida direitos, preço, mídia pronta, autorização de imagem) |
+| POST | `/seller/listings/{id}/unpublish` | Tira do ar (quem já comprou mantém o download) |
+| GET | `/seller/stats` · `/seller/sales` · `/seller/reports/commissions` | Painel, histórico e comissões por mês (`?from=&to=`) |
+
+Publicada: só preços e tags podem mudar. Preços em **centavos inteiros** (mín. R$ 2,00).
+
+### Compras (logado)
+| Método | Rota | Descrição |
+|---|---|---|
+| POST | `/orders` | `items: [{listing, license}]` + cabeçalho `Idempotency-Key`. Preço e comissão são calculados no servidor |
+| GET | `/orders` · `/orders/{id}` | Pedidos do próprio usuário |
+| POST | `/orders/{id}/pay` | Inicia o pagamento no gateway ativo |
+| POST | `/orders/{id}/simulate-payment` | Confirma o pagamento **simulado** (só em `local`/`testing`) |
+| GET | `/purchases` | Itens de pedidos **pagos**, com downloads restantes |
+| POST | `/purchases/{item}/download-url` | Link assinado de 2 min do original. `403` sem pagamento, prazo vencido, limite atingido ou reembolso |
+| GET | `/files/purchase/{grant}/download` | Entrega do original (URL assinada; revalida pagamento) |
+
+### Webhooks
+`POST /webhooks/{gateway}` (só o gateway ativo). Assinatura validada antes de qualquer efeito (`401` se inválida) e processamento **idempotente**
+por `event_id`. Eventos: `payment.confirmed`, `payment.failed`, `payment.refunded`.
+
+### Moderação (administrador da plataforma; para os demais, `404`)
+`GET /admin/listings?status=` · `GET /admin/listings/{id}` · `POST .../approve` · `POST .../reject` e `.../suspend` (`reason`) ·
+`GET /admin/reports` · `POST /admin/reports/{id}/resolve` (`action: dismiss|suspend_listing`) ·
+`GET /admin/sellers` · `PATCH /admin/sellers/{slug}` (`status`, `commission_bps` 0–5000 ou `null` para o padrão).

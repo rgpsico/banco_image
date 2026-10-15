@@ -8,7 +8,7 @@ em `api/app/Modules/`. Os models Eloquent ficam em `app/Models` (núcleo compart
 | Authentication | 1 | Cadastro, login/logout, recuperação de senha, tokens Sanctum |
 | Tenants | 1 | Projetos, membros, papéis, policies, resolução do tenant |
 | Media / Collections / Storage | 2 | Upload, biblioteca, coleções, miniaturas, camada de armazenamento |
-| Marketplace | 3 | Vendedores, publicações, licenças, catálogo, moderação |
+| Marketplace | 3 | Vendedores, publicações, licenças, catálogo, moderação, denúncias, painel do vendedor |
 | Orders / Payments / Downloads | 3 | Carrinho, gateway (simulado), liberação de download |
 
 Controllers enxutos; regra de negócio em **Actions** (`app/Modules/*/Actions`) e **Services** (`.../Services`);
@@ -51,3 +51,24 @@ Fase 4: apontar `MEDIA_DISK` para um disco S3/R2: as regras de negócio não mud
 15 tabelas de domínio: `users`, `tenants`, `tenant_user`, `tenant_domains`, `media`, `media_variants`, `collections`,
 `collection_media`, `listings`, `licenses`, `listing_licenses`, `orders`, `order_items`, `payments`, `download_grants`,
 `upload_sessions` (+ tabelas padrão do Laravel: tokens, cache, jobs, sessões).
+
+
+## Marketplace (Fase 3)
+
+**Publicação:** `rascunho → em análise → publicada | recusada | suspensa | arquivada` (`ChangeListingStatus`). Só o dono (editor+ do projeto da mídia)
+publica, por ação explícita. Exige declaração de direitos (com data), autorização de imagem quando há pessoas, preço em ao menos uma licença e a mídia pronta.
+Administradores da plataforma publicam direto; `MARKETPLACE_AUTO_APPROVE=true` pula a moderação (não use em produção).
+
+**Prévia com marca d'água:** `WatermarkService` parte da variante `preview` (nunca do original) e gera `watermarked` (1200 px) e `wm_thumb` (480 px).
+O catálogo só serve essas duas variantes. Vídeo ganha prévia a partir de um quadro extraído com ffmpeg.
+
+**Dinheiro:** tudo em centavos inteiros. `CommissionCalculator` divide o preço em comissão da plataforma e ganho do vendedor com aritmética inteira
+(arredonda metade para cima, sempre fecha no centavo). A porcentagem usada fica **congelada em cada item** (`commission_bps`, `platform_fee_cents`,
+`seller_earning_cents`), então mudar a comissão depois não altera vendas passadas. O comprador paga o preço de vitrine; a comissão sai da parte do vendedor.
+
+**Pagamento:** `PaymentGatewayInterface` (`createCharge`, `parseWebhook`). Existe o `SimulatedGateway` (recusa-se a funcionar fora de `local`/`testing`).
+O Asaas entra na Fase 4 com a mesma interface. Todo evento (webhook real ou confirmação simulada) passa por `PaymentService::handle`:
+transação com lock, idempotente, cria os `download_grants` e conta a venda.
+
+**Download:** só existe `download_grant` depois do pagamento confirmado; limite (10), prazo (365 dias), revogação em reembolso. O link é assinado e dura 2 minutos,
+e o arquivo é **revalidado** na entrega.

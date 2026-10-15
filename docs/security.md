@@ -25,6 +25,19 @@
   Sessões de upload só servem a quem as criou.
 - **Metadados:** GPS não é guardado nem exposto.
 
+## Marketplace (Fase 3)
+
+- **Original nunca é público:** o catálogo serve só `wm_thumb`/`watermarked`; não existe rota para o original nem para a prévia sem marca (testado).
+- **Preço e comissão no servidor:** o cliente só envia ids e a licença; valores e comissão são calculados e congelados no item. Preço de vitrine alterado depois não afeta pedidos já criados.
+- **Pagamento:** webhook com assinatura HMAC validada antes de qualquer efeito, comparação em tempo constante, `event_id` idempotente, confirmação dentro de transação com lock.
+  O gateway simulado não funciona em produção e o endpoint de confirmação simulada devolve 404 fora de `local`/`testing`.
+- **Download só após pagamento:** sem `download_grant` (pedido pendente) não há link; limite, prazo e revogação; revalidação na entrega.
+- **Idempotência de pedido:** `Idempotency-Key` por comprador evita pedidos duplicados em cliques repetidos.
+- **Moderação e direitos autorais:** declaração de direitos com data, autorização de imagem para pessoas reconhecíveis, denúncias (uma por pessoa), suspensão automática
+  com 3 denúncias abertas, suspensão manual de publicação e de vendedor. Área de moderação responde `404` a quem não é administrador.
+- **Privacidade:** o vendedor vê o comprador só pelo primeiro nome; o comprador não vê comissão nem ganhos.
+- **Vendedor não compra o que é seu**; não recompra a mesma licença já paga.
+
 ## Decisão a revisitar
 
 O front guarda o token em `localStorage` (simples e adequado ao MVP). Um XSS poderia roubá-lo. Alternativa mais forte:

@@ -19,7 +19,7 @@ async function submit() {
   loading.value = true; error.value = ''; fields.value = {}
   try {
     await auth.login(form)
-    router.push(route.query.redirect || { name: 'dashboard' })
+    router.push(route.query.redirect || { name: 'market' })
   } catch (e) {
     const p = parseError(e); error.value = p.message; fields.value = p.fields
   } finally { loading.value = false }

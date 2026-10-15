@@ -18,7 +18,7 @@ async function submit() {
   loading.value = true; error.value = ''; fields.value = {}
   try {
     await auth.register(form)
-    router.push({ name: 'dashboard' })
+    router.push({ name: 'market' })
   } catch (e) {
     const p = parseError(e); error.value = p.message; fields.value = p.fields
   } finally { loading.value = false }
