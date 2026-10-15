@@ -1,0 +1,4 @@
+# Mantém LF nos scripts/arquivos que rodam dentro dos containers Linux (evita quebra no Windows).
+*.sh text eol=lf
+artisan text eol=lf
+*.php text eol=lf
