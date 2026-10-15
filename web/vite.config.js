@@ -5,7 +5,8 @@ import vue from '@vitejs/plugin-vue'
 export default defineConfig({
   plugins: [vue()],
   server: {
-    allowedHosts: ['localhost', '127.0.0.1', 'web'], // 'web' = nome do serviço no docker compose
+    // 'web' = nome do serviço no docker compose. Domínios extras (servidor): VITE_ALLOWED_HOSTS=dominio1,dominio2
+    allowedHosts: ['localhost', '127.0.0.1', 'web', ...(process.env.VITE_ALLOWED_HOSTS ? process.env.VITE_ALLOWED_HOSTS.split(',') : [])],
     proxy: {
       '/api': { target: process.env.VITE_API_PROXY || 'http://localhost:8110', changeOrigin: true },
     },
