@@ -29,7 +29,7 @@ services:
     volumes:
       - ./api:/var/www
     ports:
-      - "8110:8000"
+      - "127.0.0.1:8110:8000"   # só acessível da própria máquina; o front encaminha /api internamente
     depends_on:
       mysql:
         condition: service_healthy
@@ -64,7 +64,7 @@ services:
   mailpit:
     image: axllent/mailpit
     ports:
-      - "8025:8025"
+      - "127.0.0.1:8025:8025"   # e-mails de teste: nunca expor publicamente (contêm links de recuperação)
 
 volumes:
   mysql_data:

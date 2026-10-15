@@ -17,6 +17,9 @@ return [
 
     'frontend_url' => env('FRONTEND_URL', 'http://localhost:5180'),
 
+    // Usuários de demonstração (alice/bruno, senha conhecida). Desligue em qualquer servidor acessível pela internet.
+    'seed_demo_data' => (bool) env('SEED_DEMO_DATA', true),
+
     /*
     |--------------------------------------------------------------------------
     | Application Environment

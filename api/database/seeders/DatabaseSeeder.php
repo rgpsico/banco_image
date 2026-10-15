@@ -14,7 +14,7 @@ class DatabaseSeeder extends Seeder
         $this->call(LicenseSeeder::class);
 
         // Dados de demonstração: somente em ambiente local, nunca em produção.
-        if (! app()->environment('local', 'testing')) {
+        if (! config('app.seed_demo_data') || ! app()->environment('local', 'testing')) {
             return;
         }
 
