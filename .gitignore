@@ -1,0 +1,11 @@
+.DS_Store
+.idea/
+.vscode/
+*.log
+/api/vendor/
+/api/node_modules/
+/api/storage/app/private/*
+!/api/storage/app/private/.gitignore
+/web/node_modules/
+/web/dist/
+.env

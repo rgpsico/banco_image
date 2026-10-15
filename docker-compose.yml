@@ -1,0 +1,70 @@
+# Ambiente de desenvolvimento local do MediaHub.
+#   docker compose up -d        sobe MySQL, API, fila, front e Mailpit
+#   API:   http://localhost:8110      Front: http://localhost:5180      E-mails: http://localhost:8025
+name: mediahub
+
+services:
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: mediahub
+      MYSQL_USER: mediahub
+      MYSQL_PASSWORD: ${DB_PASSWORD:-mediahub_dev}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root_dev}
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./docker/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  api:
+    build: ./docker/api
+    command: php artisan serve --host=0.0.0.0 --port=8000
+    working_dir: /var/www
+    environment:
+      RUN_MIGRATIONS: "1"
+    volumes:
+      - ./api:/var/www
+    ports:
+      - "8110:8000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "php", "-r", "exit(@file_get_contents('http://127.0.0.1:8000/up') ? 0 : 1);"]
+      interval: 5s
+      timeout: 5s
+      retries: 40
+      start_period: 20s
+
+  queue:
+    build: ./docker/api
+    command: php artisan queue:work --tries=3 --timeout=120
+    working_dir: /var/www
+    volumes:
+      - ./api:/var/www
+    depends_on:
+      api:
+        condition: service_healthy  # espera as dependências/migrations do serviço api
+
+  web:
+    image: node:22-alpine
+    working_dir: /app
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 5173"
+    volumes:
+      - ./web:/app
+    ports:
+      - "5180:5173"
+    environment:
+      VITE_API_PROXY: http://api:8000
+
+  mailpit:
+    image: axllent/mailpit
+    ports:
+      - "8025:8025"
+
+volumes:
+  mysql_data:
