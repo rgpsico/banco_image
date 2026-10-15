@@ -21,7 +21,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->alias(['tenant' => ResolveTenant::class]);
+        $middleware->alias([
+            'tenant' => ResolveTenant::class,
+            'seller' => \App\Modules\Marketplace\Http\Middleware\EnsureSeller::class,
+            'platform.admin' => \App\Modules\Marketplace\Http\Middleware\EnsurePlatformAdmin::class,
+        ]);
         // API pura: nunca redireciona visitantes para uma tela de login (não existe); responde 401 em JSON.
         $middleware->redirectGuestsTo(fn () => null);
         $middleware->trustProxies(at: '*');

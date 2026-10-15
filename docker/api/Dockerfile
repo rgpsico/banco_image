@@ -1,7 +1,7 @@
 FROM php:8.4-cli
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-        git unzip libzip-dev libpng-dev libjpeg-dev libwebp-dev libfreetype6-dev libonig-dev libxml2-dev libicu-dev \
+        ffmpeg fonts-dejavu-core git unzip libzip-dev libpng-dev libjpeg-dev libwebp-dev libfreetype6-dev libonig-dev libxml2-dev libicu-dev \
     && docker-php-ext-configure gd --with-jpeg --with-webp --with-freetype \
     && docker-php-ext-install pdo_mysql mbstring zip intl bcmath gd pcntl exif \
     && apt-get clean && rm -rf /var/lib/apt/lists/*

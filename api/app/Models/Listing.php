@@ -15,9 +15,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[Fillable([
     'seller_id', 'tenant_id', 'media_id', 'title', 'description', 'category', 'tags', 'status', 'rejection_reason',
-    'reviewed_by', 'reviewed_at', 'published_at', 'rights_declared_at', 'has_people', 'model_release_confirmed',
+    'reviewed_by', 'reviewed_at', 'published_at', 'rights_declared_at', 'has_people', 'model_release_confirmed', 'tags_text',
 ])]
-#[Hidden(['id', 'seller_id', 'tenant_id', 'media_id', 'reviewed_by'])]
+#[Hidden(['id', 'seller_id', 'tenant_id', 'media_id', 'reviewed_by', 'tags_text'])]
 class Listing extends Model
 {
     use HasFactory, HasUlid, SoftDeletes;
@@ -35,6 +35,14 @@ class Listing extends Model
         ];
     }
 
+    /** Visível no catálogo: publicada, vendedor ativo e mídia existente. */
+    public function scopePublished(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder
+    {
+        return $query->where('listings.status', ListingStatus::Published->value)
+            ->whereHas('seller.sellerProfile', fn ($q) => $q->where('status', 'active'))
+            ->whereHas('media');
+    }
+
     public function seller(): BelongsTo
     {
         return $this->belongsTo(User::class, 'seller_id');
@@ -49,6 +57,16 @@ class Listing extends Model
     {
         // A mídia pertence a um tenant privado; a publicação cruza tenants por desenho.
         return $this->belongsTo(Media::class)->withoutGlobalScope('tenant');
+    }
+
+    public function orderItems(): HasMany
+    {
+        return $this->hasMany(OrderItem::class);
+    }
+
+    public function reports(): HasMany
+    {
+        return $this->hasMany(ListingReport::class);
     }
 
     public function prices(): HasMany

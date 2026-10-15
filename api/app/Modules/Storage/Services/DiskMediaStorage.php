@@ -78,7 +78,7 @@ class DiskMediaStorage implements MediaStorage
         }
     }
 
-    public function response(string $path, string $mime, string $filename, bool $download): Response
+    public function response(string $path, string $mime, string $filename, bool $download, ?string $cacheControl = null): Response
     {
         $headers = [
             'Content-Type' => $mime,
@@ -89,7 +89,7 @@ class DiskMediaStorage implements MediaStorage
             ),
             'X-Content-Type-Options' => 'nosniff',
             'Content-Security-Policy' => "default-src 'none'; sandbox",
-            'Cache-Control' => 'private, max-age=300',
+            'Cache-Control' => $cacheControl ?? 'private, max-age=300',
         ];
 
         if ($this->isLocal()) {

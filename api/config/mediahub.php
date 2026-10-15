@@ -33,4 +33,37 @@ return [
     // Validade das URLs assinadas.
     'url_ttl_minutes' => 60,
     'download_ttl_seconds' => 120,
+
+    // ----- Marketplace (Fase 3) -----
+    'marketplace' => [
+        // Comissão da plataforma em pontos-base (2000 = 20%). Cada vendedor pode ter a sua (seller_profiles.commission_bps).
+        'commission_bps' => (int) env('MARKETPLACE_COMMISSION_BPS', 2000),
+        'min_price_cents' => 200,          // R$ 2,00
+        'max_price_cents' => 10_000_000,   // R$ 100.000,00
+        'max_tags' => 10,
+        // Quando true, publicações do vendedor entram direto (sem moderação). Em produção, deixe false.
+        'auto_approve' => (bool) env('MARKETPLACE_AUTO_APPROVE', false),
+        'categories' => [
+            'praia' => 'Praia', 'natureza' => 'Natureza', 'pessoas' => 'Pessoas', 'cidade' => 'Cidade',
+            'esporte' => 'Esporte', 'gastronomia' => 'Gastronomia', 'viagem' => 'Viagem', 'eventos' => 'Eventos', 'outros' => 'Outros',
+        ],
+        // N denúncias abertas suspendem a publicação até a análise.
+        'report_auto_suspend' => 3,
+        // Marca d'água das prévias públicas.
+        'watermark_text' => env('MARKETPLACE_WATERMARK', 'MEDIAHUB'),
+        'watermark_font' => env('MARKETPLACE_WATERMARK_FONT', '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf'),
+        'public_preview_edge' => 1200,
+        'public_thumb_edge' => 480,
+        // Downloads de quem comprou.
+        'download_max' => 10,
+        'download_days' => 365,
+    ],
+
+    // ----- Pagamentos -----
+    'payments' => [
+        // simulated (somente local/testes) | asaas (Fase 4)
+        'gateway' => env('PAYMENT_GATEWAY', 'simulated'),
+        'simulated_secret' => env('PAYMENT_SIMULATED_SECRET', 'dev-only-simulated-secret'),
+        'order_ttl_minutes' => 60,
+    ],
 ];

@@ -26,5 +26,5 @@ interface MediaStorage
     public function withLocalCopy(string $path, callable $callback): mixed;
 
     /** Resposta HTTP em streaming (com suporte a Range quando o disco permite). */
-    public function response(string $path, string $mime, string $filename, bool $download): Response;
+    public function response(string $path, string $mime, string $filename, bool $download, ?string $cacheControl = null): Response;
 }

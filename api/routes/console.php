@@ -9,3 +9,4 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('mediahub:prune-uploads')->hourly();
+Schedule::command('mediahub:expire-orders')->everyTenMinutes();

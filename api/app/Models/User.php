@@ -51,6 +51,11 @@ class User extends Authenticatable
         return $role instanceof TenantRole ? $role : ($role ? TenantRole::from($role) : null);
     }
 
+    public function sellerProfile(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(SellerProfile::class);
+    }
+
     public function listings(): HasMany
     {
         return $this->hasMany(Listing::class, 'seller_id');

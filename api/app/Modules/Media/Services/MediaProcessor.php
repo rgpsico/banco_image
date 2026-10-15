@@ -9,6 +9,7 @@ use App\Models\MediaVariant;
 use App\Modules\Storage\Contracts\MediaStorage;
 use App\Modules\Storage\Support\MediaPaths;
 use Illuminate\Support\Facades\Log;
+use Symfony\Component\Process\Process;
 
 /** Gera miniatura e preview (WebP) e extrai metadados seguros. Vídeos: sem poster nesta fase (requer ffmpeg). */
 class MediaProcessor
@@ -19,28 +20,92 @@ class MediaProcessor
 
     public function process(Media $media): void
     {
-        if ($media->type !== MediaType::Image) {
-            $media->update(['status' => MediaStatus::Ready]);
+        if ($media->type === MediaType::Video) {
+            $this->processVideo($media);
 
             return;
         }
 
         try {
             $this->storage->withLocalCopy($media->path, function (string $local) use ($media) {
-                $image = $this->load($local, $media->mime_type);
-                $image = $this->fixOrientation($image, $local, $media->mime_type);
-
-                foreach (config('mediahub.variants') as $kind => $maxEdge) {
-                    $this->storeVariant($media, $kind, $image, (int) $maxEdge);
-                }
-
-                imagedestroy($image);
+                $this->buildVariants($media, $local, $media->mime_type);
                 $media->update(['metadata' => $this->metadata($local, $media->mime_type), 'status' => MediaStatus::Ready]);
             });
         } catch (\Throwable $e) {
             Log::warning('Falha ao processar mídia', ['media' => $media->ulid, 'erro' => $e->getMessage()]);
             $media->update(['status' => MediaStatus::Failed]);
         }
+    }
+
+    /**
+     * Vídeo: usa o ffmpeg para tirar um quadro e gerar as mesmas variantes das imagens (miniatura/preview).
+     * Se o ffmpeg falhar, o vídeo continua utilizável (reprodução e download), apenas sem miniatura.
+     */
+    private function processVideo(Media $media): void
+    {
+        try {
+            $this->storage->withLocalCopy($media->path, function (string $local) use ($media) {
+                $info = $this->probe($local);
+                $frame = tempnam(sys_get_temp_dir(), 'mhframe') . '.jpg';
+
+                try {
+                    $at = ($info['duration'] ?? 0) > 2 ? '1' : '0';
+                    $run = new Process(['ffmpeg', '-y', '-v', 'error', '-ss', $at, '-i', $local, '-frames:v', '1', '-vf', "scale='min(1600,iw)':-2", '-q:v', '3', $frame]);
+                    $run->setTimeout(60)->run();
+
+                    if ($run->isSuccessful() && is_file($frame) && filesize($frame) > 0) {
+                        $this->buildVariants($media, $frame, 'image/jpeg');
+                    }
+                } finally {
+                    @unlink($frame);
+                }
+
+                $update = ['status' => MediaStatus::Ready];
+                if (! empty($info['duration'])) {
+                    $update['duration_seconds'] = (int) round($info['duration']);
+                }
+                if (! empty($info['width'])) {
+                    $update['width'] = $info['width'];
+                    $update['height'] = $info['height'];
+                }
+                $media->update($update);
+            });
+        } catch (\Throwable $e) {
+            Log::warning('Falha ao processar vídeo', ['media' => $media->ulid, 'erro' => $e->getMessage()]);
+            $media->update(['status' => MediaStatus::Ready]); // utilizável mesmo sem miniatura
+        }
+    }
+
+    /** @return array{duration?: float, width?: int, height?: int} */
+    private function probe(string $path): array
+    {
+        $run = new Process(['ffprobe', '-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=width,height:format=duration', '-of', 'json', $path]);
+        $run->setTimeout(30)->run();
+
+        if (! $run->isSuccessful()) {
+            return [];
+        }
+
+        $data = json_decode($run->getOutput(), true) ?: [];
+
+        return array_filter([
+            'duration' => isset($data['format']['duration']) ? (float) $data['format']['duration'] : null,
+            'width' => $data['streams'][0]['width'] ?? null,
+            'height' => $data['streams'][0]['height'] ?? null,
+        ]);
+    }
+
+    /** Gera thumb/preview a partir de um arquivo de imagem local. */
+    private function buildVariants(Media $media, string $localImage, string $mime): void
+    {
+        $image = $this->load($localImage, $mime);
+        $image = $this->fixOrientation($image, $localImage, $mime);
+
+        foreach (config('mediahub.variants') as $kind => $maxEdge) {
+            $this->storeVariant($media, $kind, $image, (int) $maxEdge);
+        }
+
+        imagedestroy($image);
     }
 
     private function load(string $path, string $mime): \GdImage
