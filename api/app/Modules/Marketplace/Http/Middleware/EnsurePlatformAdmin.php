@@ -11,7 +11,7 @@ class EnsurePlatformAdmin
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (! $request->user()?->is_platform_admin) {
+        if (! $request->user()?->isPlatformAdmin()) {
             return response()->json(['message' => 'Recurso não encontrado.'], 404);
         }
 

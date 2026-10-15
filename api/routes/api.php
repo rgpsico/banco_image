@@ -4,6 +4,7 @@ use App\Modules\Authentication\Http\Controllers\AuthController;
 use App\Modules\Authentication\Http\Controllers\PasswordResetController;
 use App\Modules\Collections\Http\Controllers\CollectionController;
 use App\Modules\Downloads\Http\Controllers\PurchaseController;
+use App\Modules\Marketplace\Http\Controllers\AdminUserController;
 use App\Modules\Marketplace\Http\Controllers\CatalogController;
 use App\Modules\Orders\Http\Controllers\AdminOrderController;
 use App\Modules\Orders\Http\Controllers\OrderController;
@@ -110,6 +111,8 @@ Route::prefix('v1')->group(function () {
             Route::post('reports/{report}/resolve', [ReportController::class, 'resolve']);
             Route::get('sellers', [ReportController::class, 'sellers']);
             Route::patch('sellers/{slug}', [ReportController::class, 'updateSeller']);
+            Route::get('users', [AdminUserController::class, 'index']);
+            Route::patch('users/{user}', [AdminUserController::class, 'update'])->middleware('throttle:30,1');
             Route::get('orders', [AdminOrderController::class, 'index']);
             Route::post('orders/{order}/refund', [AdminOrderController::class, 'refund'])->middleware('throttle:30,1');
             Route::get('payouts', [AdminOrderController::class, 'payouts']);

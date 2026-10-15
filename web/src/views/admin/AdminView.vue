@@ -12,6 +12,8 @@ const reports = ref([])
 const sellers = ref([])
 const orders = ref([])
 const payouts = ref([])
+const users = ref([])
+const userQuery = ref('')
 const loading = ref(false)
 const error = ref('')
 const forbidden = ref(false)
@@ -24,6 +26,7 @@ async function load() {
     if (tab.value === 'review') listings.value = (await api.get('/admin/listings', { params: { status: 'pending_review' } })).data.data
     else if (tab.value === 'reports') reports.value = (await api.get('/admin/reports')).data.data
     else if (tab.value === 'orders') orders.value = (await api.get('/admin/orders')).data.data
+    else if (tab.value === 'users') users.value = (await api.get('/admin/users', { params: { q: userQuery.value || undefined } })).data.data
     else if (tab.value === 'payouts') payouts.value = (await api.get('/admin/payouts')).data.data
     else sellers.value = (await api.get('/admin/sellers')).data.data
   } catch (e) { if (e.response?.status === 404) forbidden.value = true; else error.value = parseError(e).message } finally { loading.value = false }
@@ -38,6 +41,14 @@ async function confirm(reason) {
 }
 async function resolve(r, action) { try { await api.post(`/admin/reports/${r.id}/resolve`, { action }); await load() } catch (e) { error.value = parseError(e).message } }
 async function setStatus(s, status) { try { await api.patch(`/admin/sellers/${s.slug}`, { status }); await load() } catch (e) { error.value = parseError(e).message } }
+async function setAdmin(u, isAdmin) {
+  error.value = ''
+  try { await api.patch(`/admin/users/${u.id}`, { is_admin: isAdmin }); await load() } catch (e) { error.value = parseError(e).message }
+}
+async function toggleAutoApprove(s) {
+  try { await api.patch(`/admin/sellers/${s.slug}`, { auto_approve: !s.auto_approve }); await load() } catch (e) { error.value = parseError(e).message }
+}
+
 const orderLabel = { pending: 'Aguardando', paid: 'Pago', expired: 'Expirado', cancelled: 'Cancelado', refunded: 'Reembolsado' }
 const refundTarget = ref(null) // pedido em confirmação de reembolso
 async function refund() {
@@ -69,6 +80,7 @@ async function setCommission(s) {
       <li class="nav-item"><button class="nav-link" :class="{ active: tab === 'reports' }" @click="tab = 'reports'">Denúncias</button></li>
       <li class="nav-item"><button class="nav-link" :class="{ active: tab === 'sellers' }" @click="tab = 'sellers'">Vendedores</button></li>
       <li class="nav-item"><button class="nav-link" :class="{ active: tab === 'orders' }" @click="tab = 'orders'">Pedidos</button></li>
+      <li class="nav-item"><button class="nav-link" :class="{ active: tab === 'users' }" @click="tab = 'users'">Usuários</button></li>
       <li class="nav-item"><button class="nav-link" :class="{ active: tab === 'payouts' }" @click="tab = 'payouts'">Repasses</button></li>
     </ul>
     <FormAlert :message="error" />
@@ -124,6 +136,27 @@ async function setCommission(s) {
       </div>
     </template>
 
+    <template v-else-if="tab === 'users'">
+      <p class="small text-muted">Administradores aprovam publicações, tratam denúncias, reembolsam pedidos e registram repasses. Promova só quem você confia.</p>
+      <form class="input-group mb-3" style="max-width: 420px" @submit.prevent="load">
+        <input v-model="userQuery" class="form-control" type="search" placeholder="Buscar por nome ou e-mail" aria-label="Buscar usuário" />
+        <button class="btn btn-outline-secondary" type="submit">Buscar</button>
+      </form>
+      <div v-if="!users.length" class="text-center text-muted py-5 empty-state">Nenhum usuário encontrado.</div>
+      <div v-else class="card shadow-sm"><div class="table-responsive"><table class="table align-middle mb-0">
+        <thead><tr><th>Usuário</th><th>Acesso</th><th></th></tr></thead>
+        <tbody><tr v-for="u in users" :key="u.id" class="user-row">
+          <td>{{ u.name }} <span v-if="u.is_me" class="badge text-bg-light">você</span><div class="small text-muted">{{ u.email }}</div></td>
+          <td><span class="badge" :class="u.is_admin ? 'text-bg-primary' : 'text-bg-light'">{{ u.is_admin ? 'Administrador' : 'Usuário' }}</span>
+            <span v-if="u.fixed_admin" class="small text-muted ms-1">(fixo no servidor)</span></td>
+          <td class="text-end">
+            <button v-if="!u.is_admin" class="btn btn-sm btn-outline-primary" @click="setAdmin(u, true)">Tornar administrador</button>
+            <button v-else-if="!u.is_me && !u.fixed_admin" class="btn btn-sm btn-outline-danger" @click="setAdmin(u, false)">Remover acesso</button>
+          </td>
+        </tr></tbody>
+      </table></div></div>
+    </template>
+
     <template v-else-if="tab === 'payouts'">
       <p class="small text-muted">Vendas pagas que ainda precisam ser repassadas manualmente (vendedores sem carteira Asaas). Quem tem carteira recebe o split automático.</p>
       <div v-if="!payouts.length" class="text-center text-muted py-5 empty-state">Nada a repassar.</div>
@@ -144,6 +177,7 @@ async function setCommission(s) {
         <td>{{ s.listings }}</td>
         <td>{{ s.effective_commission_bps / 100 }}% <span v-if="s.commission_bps == null" class="small text-muted">(padrão)</span></td>
         <td class="text-end"><button class="btn btn-sm me-1" :class="s.has_wallet ? 'btn-outline-success' : 'btn-outline-secondary'" @click="setWallet(s)">{{ s.has_wallet ? 'Carteira ✓' : 'Carteira' }}</button>
+          <button class="btn btn-sm me-1" :class="s.auto_approve ? 'btn-outline-success' : 'btn-outline-secondary'" :title="s.auto_approve ? 'As publicações dele entram direto na vitrine. Clique para exigir análise.' : 'Clique para publicar as fotos dele sem análise (vendedor de confiança).'" @click="toggleAutoApprove(s)">{{ s.auto_approve ? 'Aprovação automática ✓' : 'Aprovação automática' }}</button>
           <button class="btn btn-sm btn-outline-secondary me-1" @click="setCommission(s)">Comissão</button>
           <button class="btn btn-sm" :class="s.status === 'active' ? 'btn-outline-danger' : 'btn-outline-success'" @click="setStatus(s, s.status === 'active' ? 'suspended' : 'active')">{{ s.status === 'active' ? 'Suspender' : 'Reativar' }}</button></td>
       </tr></tbody>

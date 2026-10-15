@@ -17,7 +17,7 @@ class ChangeListingStatus
     {
     }
 
-    /** Vendedor envia para análise (ou publica direto, se for admin da plataforma ou houver auto-aprovação). */
+    /** Vendedor envia para análise (ou publica direto: admin da plataforma, vendedor de confiança com aprovação automática ou auto-aprovação global). */
     public function submit(Listing $listing, User $seller): Listing
     {
         $this->assertFrom($listing, [ListingStatus::Draft, ListingStatus::Rejected, ListingStatus::Archived], 'enviada para análise');
@@ -30,7 +30,7 @@ class ChangeListingStatus
         $listing->update(['status' => ListingStatus::PendingReview, 'rejection_reason' => null]);
         Audit::record('listing.submitted', ['listing' => $listing->ulid]);
 
-        if ($seller->is_platform_admin || config('mediahub.marketplace.auto_approve')) {
+        if ($seller->isPlatformAdmin() || $seller->sellerProfile?->auto_approve || config('mediahub.marketplace.auto_approve')) {
             return $this->approve($listing, $seller);
         }
 

@@ -2,6 +2,10 @@
 
 return [
     // Discos do Laravel. Trocar 'media' por um disco S3/R2 não exige mudar as regras de negócio.
+    // E-mails que são administradores da plataforma sem precisar de comando no servidor (separados por vírgula).
+    // Quem está aqui é admin assim que a conta existe; os demais admins são promovidos pela tela Admin > Usuários.
+    'platform_admin_emails' => array_values(array_filter(array_map(fn ($e) => mb_strtolower(trim($e)), explode(',', (string) env('PLATFORM_ADMIN_EMAILS', ''))))),
+
     'disk' => env('MEDIA_DISK', 'media'),
     'uploads_disk' => env('MEDIA_UPLOADS_DISK', 'uploads'),
 

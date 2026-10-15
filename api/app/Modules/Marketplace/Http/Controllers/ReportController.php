@@ -73,7 +73,7 @@ class ReportController extends Controller
 
         return response()->json(['data' => $page->getCollection()->map(fn (SellerProfile $s) => [
             'slug' => $s->slug, 'display_name' => $s->display_name, 'status' => $s->status,
-            'commission_bps' => $s->commission_bps, 'effective_commission_bps' => $s->effectiveCommissionBps(), 'has_wallet' => filled($s->asaas_wallet_id),
+            'commission_bps' => $s->commission_bps, 'effective_commission_bps' => $s->effectiveCommissionBps(), 'has_wallet' => filled($s->asaas_wallet_id), 'auto_approve' => $s->auto_approve,
             'listings' => Listing::where('seller_id', $s->user_id)->count(), 'member_since' => $s->created_at?->toDateString(),
         ])->values(), 'meta' => ['current_page' => $page->currentPage(), 'last_page' => $page->lastPage(), 'total' => $page->total()]]);
     }
@@ -83,12 +83,13 @@ class ReportController extends Controller
         $v = $request->validate([
             'status' => ['sometimes', Rule::in(['active', 'suspended'])],
             'commission_bps' => ['sometimes', 'nullable', 'integer', 'min:0', 'max:5000'], // até 50%; nulo = padrão da plataforma
+            'auto_approve' => ['sometimes', 'boolean'], // vendedor de confiança: as publicações dele entram direto na vitrine
             'asaas_wallet_id' => ['sometimes', 'nullable', 'string', 'max:60', 'regex:/^[A-Za-z0-9-]+$/'], // carteira (subconta) Asaas para o split
         ]);
         $profile = SellerProfile::where('slug', $slug)->firstOrFail();
         $profile->update($v);
         Audit::record('seller.updated_by_admin', ['seller' => $profile->slug, 'changes' => array_keys($v)]);
 
-        return response()->json(['data' => ['slug' => $profile->slug, 'status' => $profile->status, 'commission_bps' => $profile->commission_bps, 'effective_commission_bps' => $profile->effectiveCommissionBps(), 'has_wallet' => filled($profile->asaas_wallet_id)]]);
+        return response()->json(['data' => ['slug' => $profile->slug, 'status' => $profile->status, 'commission_bps' => $profile->commission_bps, 'effective_commission_bps' => $profile->effectiveCommissionBps(), 'has_wallet' => filled($profile->asaas_wallet_id), 'auto_approve' => $profile->auto_approve]]);
     }
 }

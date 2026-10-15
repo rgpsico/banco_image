@@ -24,6 +24,7 @@
         <env name="DB_CONNECTION" value="mysql"/>
         <env name="DB_HOST" value="mysql"/>
         <env name="DB_DATABASE" value="mediahub_test"/>
+        <env name="PLATFORM_ADMIN_EMAILS" value="" force="true"/>
         <env name="PAYMENT_GATEWAY" value="simulated" force="true"/>
         <env name="ASAAS_KEY" value="" force="true"/>
         <env name="ASAAS_WEBHOOK_TOKEN" value="" force="true"/>

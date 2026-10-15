@@ -33,6 +33,18 @@ class User extends Authenticatable
         ];
     }
 
+    /** Administrador fixo (definido em PLATFORM_ADMIN_EMAILS): não pode ser rebaixado pela interface. */
+    public function isConfiguredAdmin(): bool
+    {
+        return in_array(mb_strtolower((string) $this->email), config('mediahub.platform_admin_emails', []), true);
+    }
+
+    /** Administrador da plataforma: promovido pela interface (flag no banco) ou fixo por configuração. */
+    public function isPlatformAdmin(): bool
+    {
+        return (bool) $this->is_platform_admin || $this->isConfiguredAdmin();
+    }
+
     public function tenants(): BelongsToMany
     {
         return $this->belongsToMany(Tenant::class, 'tenant_user')

@@ -114,7 +114,8 @@ por `event_id`. Eventos normalizados: `payment.confirmed`, `payment.failed`, `pa
 ### Moderação (administrador da plataforma; para os demais, `404`)
 `GET /admin/listings?status=` · `GET /admin/listings/{id}` · `POST .../approve` · `POST .../reject` e `.../suspend` (`reason`) ·
 `GET /admin/reports` · `POST /admin/reports/{id}/resolve` (`action: dismiss|suspend_listing`) ·
-`GET /admin/sellers` · `PATCH /admin/sellers/{slug}` (`status`, `commission_bps` 0–5000 ou `null` para o padrão, `asaas_wallet_id` — carteira Asaas para o split; só letras, números e hífen; nunca aparece em respostas públicas ou do vendedor).
+`GET /admin/users?q=` · `PATCH /admin/users/{id}` (`is_admin`: promove/remove administrador; não altera a si mesmo nem quem é fixo por configuração) ·
+`GET /admin/sellers` · `PATCH /admin/sellers/{slug}` (`status`, `auto_approve` — vendedor de confiança publica sem análise, `commission_bps` 0–5000 ou `null` para o padrão, `asaas_wallet_id` — carteira Asaas para o split; só letras, números e hífen; nunca aparece em respostas públicas ou do vendedor).
 
 ### Pedidos e repasses (administrador)
 | Método | Rota | Descrição |

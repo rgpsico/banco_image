@@ -14,7 +14,7 @@ class UserResource extends JsonResource
             'id' => $this->ulid,
             'name' => $this->name,
             'email' => $this->email,
-            'is_admin' => (bool) $this->is_platform_admin, // só controla o menu; a autorização real é do servidor
+            'is_admin' => $this->isPlatformAdmin(), // só controla o menu; a autorização real é do servidor
             'created_at' => $this->created_at?->toIso8601String(),
         ];
     }

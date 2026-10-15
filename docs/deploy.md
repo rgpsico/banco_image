@@ -13,6 +13,9 @@
 
 O Nginx Proxy Manager aponta para o serviço `web` (porta 5173 dentro da rede `proxy_net`; arquivo `docker-compose.override.yml` só do servidor). Ative **Force SSL** no domínio.
 
+## Administradores
+Defina `PLATFORM_ADMIN_EMAILS=seu@email.com` no `.env` (vários separados por vírgula): essas contas são administradoras assim que existirem. Depois disso tudo é feito pela interface em *Admin > Usuários*; não há comando a rodar.
+
 ## Asaas
 `.env.production`: `PAYMENT_GATEWAY=asaas`, `ASAAS_URL` (sandbox: `https://api-sandbox.asaas.com/v3`; produção: `https://api.asaas.com/v3`), `ASAAS_KEY` (começa com `$aact_`; entre aspas simples), `ASAAS_WEBHOOK_TOKEN`.
 No painel do Asaas (sandbox e produção são contas separadas), webhook: URL `https://<dominio>/api/v1/webhooks/asaas`, API v3, fila de sincronização ligada, token igual ao `ASAAS_WEBHOOK_TOKEN`, eventos `PAYMENT_CONFIRMED`, `PAYMENT_RECEIVED`, `PAYMENT_REFUNDED`, `PAYMENT_OVERDUE`, `PAYMENT_DELETED`, `PAYMENT_CREDIT_CARD_CAPTURE_REFUSED`.

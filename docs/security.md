@@ -43,6 +43,9 @@
 - **Webhook do Asaas:** o token vem no cabeçalho `asaas-access-token` e é comparado em tempo constante; sem token válido nada muda (`401` + auditoria). Eventos repetidos não geram efeito duplo.
 - **Segredos:** `ASAAS_KEY`, token do webhook e senhas do banco ficam só em arquivos de ambiente do servidor (`.env`, `.env.production`: fora do Git, permissão 600). O gateway se recusa a iniciar sem eles.
 - **Falha do provedor:** o cliente vê uma mensagem genérica; o detalhe vai só para o log do servidor.
+- **Administradores:** os e-mails em `PLATFORM_ADMIN_EMAILS` são admins fixos (sem comando no servidor e sem poder ser rebaixados pela tela); os demais são promovidos em *Admin > Usuários*. Ninguém altera o próprio acesso e toda mudança vai para a auditoria. Quem não é admin recebe `404` nas rotas de admin.
+- **Aprovação automática:** só o admin liga, vendedor a vendedor. Os demais continuam passando pela fila de análise.
+- **CPF/CNPJ do comprador:** pedido só quando o provedor exige (Asaas), validado com dígitos verificadores, guardado criptografado e nunca devolvido pela API.
 - **Carteira Asaas do vendedor:** campo oculto em todas as respostas; só o admin define, com validação de formato.
 - **Gateway simulado:** recusa-se a rodar em `production` e fora dos ambientes listados em `PAYMENT_SIMULATED_ENVS`.
 - **Cabeçalhos:** `nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy`, `Permissions-Policy`, CSP e HSTS no nginx de produção, `Cache-Control: no-store` nas respostas JSON autenticadas.

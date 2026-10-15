@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['user_id', 'slug', 'display_name', 'bio', 'status', 'commission_bps', 'asaas_wallet_id', 'terms_accepted_at'])]
+#[Fillable(['user_id', 'slug', 'display_name', 'bio', 'status', 'commission_bps', 'asaas_wallet_id', 'auto_approve', 'terms_accepted_at'])]
 #[Hidden(['id', 'user_id', 'asaas_wallet_id'])]
 class SellerProfile extends Model
 {
@@ -16,7 +16,7 @@ class SellerProfile extends Model
 
     protected function casts(): array
     {
-        return ['terms_accepted_at' => 'datetime', 'commission_bps' => 'integer'];
+        return ['terms_accepted_at' => 'datetime', 'commission_bps' => 'integer', 'auto_approve' => 'boolean'];
     }
 
     public function user(): BelongsTo
