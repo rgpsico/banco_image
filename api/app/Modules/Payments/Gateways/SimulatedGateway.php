@@ -19,14 +19,24 @@ class SimulatedGateway implements PaymentGatewayInterface
 {
     public function __construct()
     {
-        if (! app()->environment(['local', 'testing'])) {
-            throw new \LogicException('O gateway simulado só pode ser usado em ambiente local ou de testes.');
+        if (app()->isProduction() || ! app()->environment(config('mediahub.payments.simulated_environments'))) {
+            throw new \LogicException('O gateway simulado só pode ser usado em ambientes de teste (nunca em produção).');
         }
     }
 
     public function name(): string
     {
         return 'simulated';
+    }
+
+    public function supportsSplit(): bool
+    {
+        return false; // repasse manual no ambiente de testes
+    }
+
+    public function refund(Payment $payment): void
+    {
+        // nada a devolver: é simulação
     }
 
     public function createCharge(Order $order, Payment $payment): ChargeResult

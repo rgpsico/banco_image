@@ -9,3 +9,5 @@
 /web/node_modules/
 /web/dist/
 .env
+
+/api/.env.production

@@ -1,0 +1,95 @@
+# MediaHub em PRODUÇÃO (ou "staging"): imagens com o código dentro, Nginx + PHP-FPM, fila e agendador.
+#   docker compose -f docker-compose.prod.yml up -d --build
+# Segredos ficam em api/.env.production (NÃO versionado; modelo em api/.env.production.example).
+name: mediahub
+
+services:
+  mysql:
+    image: mysql:8.0
+    restart: unless-stopped
+    command: ["--innodb-buffer-pool-size=256M", "--max-connections=60"]
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE:-mediahub}
+      MYSQL_USER: ${DB_USERNAME:-mediahub}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?defina DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?defina DB_ROOT_PASSWORD}
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./docker/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  api:
+    build:
+      context: .
+      dockerfile: docker/prod/php/Dockerfile
+      target: app
+    image: mediahub-api-prod
+    restart: unless-stopped
+    env_file: ./api/.env.production
+    environment:
+      RUN_MIGRATIONS: "1"
+    volumes:
+      - storage_data:/var/www/storage
+    depends_on:
+      mysql:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep -x php-fpm >/dev/null"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+
+  queue:
+    image: mediahub-api-prod
+    restart: unless-stopped
+    command: ["php", "artisan", "queue:work", "--tries=3", "--timeout=120", "--max-time=3600"]
+    env_file: ./api/.env.production
+    volumes:
+      - storage_data:/var/www/storage
+    depends_on:
+      api:
+        condition: service_healthy
+
+  scheduler:
+    image: mediahub-api-prod
+    restart: unless-stopped
+    command: ["php", "artisan", "schedule:work"]
+    env_file: ./api/.env.production
+    volumes:
+      - storage_data:/var/www/storage
+    depends_on:
+      api:
+        condition: service_healthy
+
+  web:
+    build:
+      context: .
+      dockerfile: docker/prod/nginx/Dockerfile
+    image: mediahub-web-prod
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5180:80"   # só localhost; exponha ao público por um proxy reverso com HTTPS
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/api/v1/health | grep -q ok"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  mailpit:   # e-mails de TESTE (nada sai para a internet). Em produção real, troque por SMTP de verdade e remova.
+    image: axllent/mailpit
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8025:8025"
+
+volumes:
+  mysql_data:
+  storage_data:

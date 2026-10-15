@@ -19,9 +19,15 @@
     </source>
     <php>
         <env name="APP_ENV" value="testing"/>
+        <env name="APP_CONFIG_CACHE" value="/tmp/mh-test-config.php"/>
+        <env name="APP_ROUTES_CACHE" value="/tmp/mh-test-routes.php"/>
         <env name="DB_CONNECTION" value="mysql"/>
         <env name="DB_HOST" value="mysql"/>
         <env name="DB_DATABASE" value="mediahub_test"/>
+        <env name="PAYMENT_GATEWAY" value="simulated" force="true"/>
+        <env name="ASAAS_KEY" value="" force="true"/>
+        <env name="ASAAS_WEBHOOK_TOKEN" value="" force="true"/>
+        <env name="ASAAS_URL" value="https://asaas.invalid/v3" force="true"/>
         <env name="DB_USERNAME" value="mediahub"/>
         <env name="DB_PASSWORD" value="mediahub_dev"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>

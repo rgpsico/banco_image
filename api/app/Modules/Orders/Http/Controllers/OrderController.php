@@ -44,13 +44,14 @@ class OrderController extends Controller
         return response()->json(['data' => [
             'payment' => ['id' => $payment->ulid, 'status' => $payment->status->value, 'gateway' => $payment->gateway],
             'simulated' => $payment->gateway === 'simulated',
+            'payment_url' => $payment->payload['payment_url'] ?? null, // página de pagamento do provedor (Asaas)
         ]]);
     }
 
     /** Confirma o pagamento SIMULADO (mesmo caminho do webhook real). Indisponível fora do gateway simulado. */
     public function simulatePayment(Request $request, string $order, PaymentService $payments): OrderResource
     {
-        abort_unless(config('mediahub.payments.gateway') === 'simulated' && app()->environment(['local', 'testing']), 404);
+        abort_unless(config('mediahub.payments.gateway') === 'simulated' && ! app()->isProduction() && app()->environment(config('mediahub.payments.simulated_environments')), 404);
 
         $model = $this->mine($request, $order);
         $payment = $payments->start($model);

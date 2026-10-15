@@ -16,7 +16,7 @@ class PaymentGatewayManager
     {
         return match ($name) {
             'simulated' => new SimulatedGateway(),
-            // 'asaas' => new AsaasGateway(...)   // Fase 4: cobrança, webhook e split de pagamentos
+            'asaas' => new \App\Modules\Payments\Gateways\AsaasGateway(),
             default => throw new \InvalidArgumentException("Gateway de pagamento '{$name}' não disponível."),
         };
     }

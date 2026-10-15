@@ -5,6 +5,7 @@ use App\Modules\Authentication\Http\Controllers\PasswordResetController;
 use App\Modules\Collections\Http\Controllers\CollectionController;
 use App\Modules\Downloads\Http\Controllers\PurchaseController;
 use App\Modules\Marketplace\Http\Controllers\CatalogController;
+use App\Modules\Orders\Http\Controllers\AdminOrderController;
 use App\Modules\Orders\Http\Controllers\OrderController;
 use App\Modules\Payments\Http\Controllers\WebhookController;
 use App\Modules\Marketplace\Http\Controllers\ModerationController;
@@ -20,7 +21,7 @@ use App\Modules\Tenants\Http\Controllers\TenantMemberController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
-    Route::get('health', fn () => response()->json(['status' => 'ok']));
+    Route::get('health', \App\Http\Controllers\HealthController::class);
 
     // Públicas (com limite de taxa por IP)
     Route::middleware('throttle:auth')->prefix('auth')->group(function () {
@@ -109,6 +110,10 @@ Route::prefix('v1')->group(function () {
             Route::post('reports/{report}/resolve', [ReportController::class, 'resolve']);
             Route::get('sellers', [ReportController::class, 'sellers']);
             Route::patch('sellers/{slug}', [ReportController::class, 'updateSeller']);
+            Route::get('orders', [AdminOrderController::class, 'index']);
+            Route::post('orders/{order}/refund', [AdminOrderController::class, 'refund'])->middleware('throttle:30,1');
+            Route::get('payouts', [AdminOrderController::class, 'payouts']);
+            Route::post('payouts/{slug}/mark-paid', [AdminOrderController::class, 'markPaid']);
         });
 
         // Recursos do projeto: o middleware "tenant" fixa o projeto atual (e o isolamento) antes dos controllers.

@@ -65,6 +65,21 @@ return [
             'report' => false,
         ],
 
+        // Cloudflare R2 (compatível com S3). Para usar: MEDIA_DISK=r2 e MEDIA_UPLOADS_DISK=uploads (partes temporárias ficam locais).
+        // O bucket DEVE ser privado: os arquivos só saem pelo MediaHub, com URL assinada e permissão checada.
+        'r2' => [
+            'driver' => 's3',
+            'key' => env('R2_ACCESS_KEY_ID'),
+            'secret' => env('R2_SECRET_ACCESS_KEY'),
+            'region' => 'auto',
+            'bucket' => env('R2_BUCKET'),
+            'endpoint' => env('R2_ENDPOINT'), // https://<ACCOUNT_ID>.r2.cloudflarestorage.com
+            'use_path_style_endpoint' => true,
+            'visibility' => 'private',
+            'throw' => true,
+            'report' => true,
+        ],
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),

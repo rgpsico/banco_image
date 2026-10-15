@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable([
     'order_id', 'listing_id', 'license_id', 'seller_id', 'title_snapshot', 'unit_price_cents', 'commission_bps',
-    'platform_fee_cents', 'seller_earning_cents',
+    'platform_fee_cents', 'seller_earning_cents', 'payout_status', 'payout_paid_at', 'payout_note',
 ])]
 #[Hidden(['id', 'order_id', 'listing_id', 'license_id', 'seller_id'])]
 class OrderItem extends Model
@@ -26,6 +26,7 @@ class OrderItem extends Model
             'commission_bps' => 'integer',
             'platform_fee_cents' => 'integer',
             'seller_earning_cents' => 'integer',
+            'payout_paid_at' => 'datetime',
         ];
     }
 

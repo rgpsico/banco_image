@@ -8,8 +8,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['user_id', 'slug', 'display_name', 'bio', 'status', 'commission_bps', 'terms_accepted_at'])]
-#[Hidden(['id', 'user_id'])]
+#[Fillable(['user_id', 'slug', 'display_name', 'bio', 'status', 'commission_bps', 'asaas_wallet_id', 'terms_accepted_at'])]
+#[Hidden(['id', 'user_id', 'asaas_wallet_id'])]
 class SellerProfile extends Model
 {
     use HasFactory;

@@ -16,8 +16,14 @@ interface PaymentGatewayInterface
 {
     public function name(): string;
 
+    /** O gateway reparte o valor entre plataforma e vendedores no momento do pagamento (split)? */
+    public function supportsSplit(): bool;
+
     /** Cria a cobrança no provedor e devolve a referência dele. */
     public function createCharge(Order $order, Payment $payment): ChargeResult;
+
+    /** Pede o reembolso ao provedor. */
+    public function refund(Payment $payment): void;
 
     /**
      * Valida a ASSINATURA do webhook e converte o corpo em um evento normalizado.

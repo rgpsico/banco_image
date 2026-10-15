@@ -64,6 +64,13 @@ return [
         // simulated (somente local/testes) | asaas (Fase 4)
         'gateway' => env('PAYMENT_GATEWAY', 'simulated'),
         'simulated_secret' => env('PAYMENT_SIMULATED_SECRET', 'dev-only-simulated-secret'),
+        // Ambientes em que o gateway SIMULADO pode rodar. "production" nunca deve estar na lista.
+        'simulated_environments' => array_values(array_filter(array_map('trim', explode(',', (string) env('PAYMENT_SIMULATED_ENVS', 'local,testing'))))),
         'order_ttl_minutes' => 60,
+        'asaas' => [
+            'key' => env('ASAAS_KEY'),
+            'url' => env('ASAAS_URL', 'https://api.asaas.com/v3'),
+            'webhook_token' => env('ASAAS_WEBHOOK_TOKEN'),
+        ],
     ],
 ];

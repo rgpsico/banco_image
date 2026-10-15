@@ -161,7 +161,7 @@ class PaymentTest extends TestCase
     public function test_unknown_gateways_are_not_available(): void
     {
         $this->expectException(\InvalidArgumentException::class);
-        app(PaymentGatewayManager::class)->make('asaas'); // Fase 4
+        app(PaymentGatewayManager::class)->make('paypal');
     }
 
     public function test_money_is_always_stored_as_integer_cents(): void

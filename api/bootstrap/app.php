@@ -29,6 +29,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // API pura: nunca redireciona visitantes para uma tela de login (não existe); responde 401 em JSON.
         $middleware->redirectGuestsTo(fn () => null);
         $middleware->trustProxies(at: '*');
+        $middleware->api(append: [\App\Http\Middleware\SecurityHeaders::class]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(fn (Request $request) => $request->is('api/*') || $request->expectsJson());
