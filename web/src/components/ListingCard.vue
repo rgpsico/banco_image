@@ -22,7 +22,8 @@ defineProps({ listing: Object })
 <style scoped>
 .listing-card { overflow: hidden; background: #fff; transition: transform .1s, box-shadow .1s; }
 .listing-card:hover { transform: translateY(-2px); box-shadow: 0 .5rem 1rem rgba(0,0,0,.14) !important; }
-.thumb { position: relative; aspect-ratio: 4 / 3; background: #e9edf5; }
-.thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.thumb { position: relative; aspect-ratio: 4 / 3; background: #e9edf5; overflow: hidden; }
+/* absoluto: uma foto em pé (3:4) não pode esticar o cartão acima do 4:3 dos outros */
+.thumb img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
 .badge-type { position: absolute; top: 6px; left: 6px; }
 </style>
