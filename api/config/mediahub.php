@@ -30,6 +30,14 @@ return [
 
     // Proteção contra imagens "bomba" (poucos KB, bilhões de pixels).
     'max_pixels' => 50_000_000,
+    'galleries' => [
+        'timezone' => env('MEDIAHUB_TIMEZONE', 'America/Sao_Paulo'), // define o que é "hoje" e o dia de cada foto
+        'per_page' => 48,
+        'thumb_edge' => 480,
+        'view_edge' => 1400,
+        'max_per_project' => 20,
+    ],
+
     'processing_memory_mb' => (int) env('MEDIA_PROCESSING_MEMORY_MB', 1024), // teto de memória para decodificar uma imagem
 
     // Variantes geradas para imagens (lado maior em px).

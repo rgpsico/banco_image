@@ -14,8 +14,11 @@ use App\Modules\Marketplace\Http\Controllers\ReportController;
 use App\Modules\Marketplace\Http\Controllers\SellerDashboardController;
 use App\Modules\Marketplace\Http\Controllers\SellerController;
 use App\Modules\Marketplace\Http\Controllers\SellerListingController;
+use App\Modules\Galleries\Http\Controllers\GalleryController;
+use App\Modules\Galleries\Http\Controllers\PublicGalleryController;
 use App\Modules\Media\Http\Controllers\FileController;
 use App\Modules\Media\Http\Controllers\IntegrationController;
+use App\Modules\Media\Http\Controllers\IntegrationPhotoController;
 use App\Modules\Tenants\Http\Controllers\TenantApiKeyController;
 use App\Modules\Media\Http\Controllers\MediaController;
 use App\Modules\Media\Http\Controllers\UploadController;
@@ -51,6 +54,20 @@ Route::prefix('v1')->group(function () {
         Route::get('media/{media}', [IntegrationController::class, 'show']);
         Route::get('media/{media}/file/{kind}', [IntegrationController::class, 'file'])->whereIn('kind', ['thumb', 'preview', 'original']);
         Route::get('collections', [IntegrationController::class, 'collections']);
+        Route::get('galleries', [IntegrationPhotoController::class, 'galleries']);
+        // Escrita: só chaves criadas com a permissão de envio
+        Route::middleware('tenant.key:write')->group(function () {
+            Route::post('photos', [IntegrationPhotoController::class, 'store'])->middleware('throttle:300,1');
+            Route::post('gallery', [IntegrationPhotoController::class, 'ensureGallery']);
+        });
+    });
+
+    // ---- Galeria pública: quem tem o link vê as fotos por data (sem login e sem compra) ----
+    Route::prefix('galleries/{token}')->where(['token' => '[A-Za-z0-9]{20,48}'])->group(function () {
+        Route::get('/', [PublicGalleryController::class, 'show'])->middleware('throttle:market');
+        Route::get('photos', [PublicGalleryController::class, 'index'])->middleware('throttle:market');
+        Route::get('photos/{media}/download', [PublicGalleryController::class, 'download'])->middleware('throttle:files');
+        Route::get('photos/{media}/{size}', [PublicGalleryController::class, 'image'])->whereIn('size', ['thumb', 'view'])->middleware('throttle:files');
     });
 
     // Webhooks de pagamento (sem login: autenticados pela assinatura do provedor).
@@ -135,6 +152,12 @@ Route::prefix('v1')->group(function () {
 
         // Recursos do projeto: o middleware "tenant" fixa o projeto atual (e o isolamento) antes dos controllers.
         Route::prefix('tenants/{tenant}')->middleware('tenant')->group(function () {
+            Route::get('galleries', [GalleryController::class, 'index']);
+            Route::post('galleries', [GalleryController::class, 'store'])->middleware('throttle:30,1');
+            Route::patch('galleries/{gallery}', [GalleryController::class, 'update']);
+            Route::post('galleries/{gallery}/rotate-link', [GalleryController::class, 'rotate'])->middleware('throttle:20,1');
+            Route::delete('galleries/{gallery}', [GalleryController::class, 'destroy']);
+
             Route::get('media', [MediaController::class, 'index']);
             Route::get('media/{media}', [MediaController::class, 'show']);
             Route::patch('media/{media}', [MediaController::class, 'update']);

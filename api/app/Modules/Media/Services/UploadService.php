@@ -151,6 +151,7 @@ class UploadService
                     'width' => $info['width'],
                     'height' => $info['height'],
                     'status' => $info['type']->value === 'image' ? MediaStatus::Processing : MediaStatus::Ready,
+                    'taken_at' => \App\Modules\Galleries\Support\PhotoDate::fromFile($file, $info['mime']) ?? now(),
                 ]);
                 $media->ulid = $ulid; // o caminho do arquivo já usa este ULID
                 $media->save();

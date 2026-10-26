@@ -17,7 +17,15 @@ class WatermarkService
     {
     }
 
+    /** Marketplace: texto global e variantes "watermarked"/"wm_thumb". */
     public function generate(Media $media): void
+    {
+        $this->generateFor($media, (string) config('mediahub.marketplace.watermark_text'), 'watermarked', 'wm_thumb',
+            (int) config('mediahub.marketplace.public_preview_edge'), (int) config('mediahub.marketplace.public_thumb_edge'));
+    }
+
+    /** Versão geral: texto e variantes à escolha (galerias usam o nome do projeto). Sempre parte da "preview". */
+    public function generateFor(Media $media, string $text, string $viewKind, string $thumbKind, int $viewEdge, int $thumbEdge): void
     {
         $preview = $media->variants()->where('kind', 'preview')->first();
 
@@ -25,26 +33,26 @@ class WatermarkService
             throw new \RuntimeException('Mídia sem prévia para aplicar a marca d\'água.');
         }
 
-        $this->storage->withLocalCopy($preview->path, function (string $local) use ($media) {
+        $this->storage->withLocalCopy($preview->path, function (string $local) use ($media, $text, $viewKind, $thumbKind, $viewEdge, $thumbEdge) {
             $source = @imagecreatefromwebp($local);
 
             if (! $source) {
                 throw new \RuntimeException('Não foi possível abrir a prévia.');
             }
 
-            $this->store($media, 'watermarked', $source, (int) config('mediahub.marketplace.public_preview_edge'));
-            $this->store($media, 'wm_thumb', $source, (int) config('mediahub.marketplace.public_thumb_edge'));
+            $this->store($media, $viewKind, $source, $viewEdge, $text);
+            $this->store($media, $thumbKind, $source, $thumbEdge, $text);
             imagedestroy($source);
         });
     }
 
-    private function store(Media $media, string $kind, \GdImage $source, int $maxEdge): void
+    private function store(Media $media, string $kind, \GdImage $source, int $maxEdge, string $text): void
     {
         [$w, $h] = [imagesx($source), imagesy($source)];
         $scale = min(1, $maxEdge / max($w, $h));
         $img = imagescale($source, max(1, (int) round($w * $scale)), max(1, (int) round($h * $scale)), IMG_BICUBIC);
 
-        $this->mark($img);
+        $this->mark($img, $text);
 
         ob_start();
         imagewebp($img, null, 72);
@@ -63,9 +71,8 @@ class WatermarkService
     }
 
     /** Texto diagonal repetido por toda a imagem (impossível de recortar sem estragar a foto). */
-    private function mark(\GdImage $img): void
+    private function mark(\GdImage $img, string $text): void
     {
-        $text = (string) config('mediahub.marketplace.watermark_text');
         $font = (string) config('mediahub.marketplace.watermark_font');
         [$w, $h] = [imagesx($img), imagesy($img)];
         imagealphablending($img, true);

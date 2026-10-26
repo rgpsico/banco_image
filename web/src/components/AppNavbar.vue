@@ -68,6 +68,7 @@ async function logout() {
       </select>
       <template v-if="tenants.current">
         <RouterLink class="text-decoration-none" to="/library">Biblioteca</RouterLink>
+        <RouterLink class="text-decoration-none" to="/galleries">Galerias</RouterLink>
         <RouterLink class="text-decoration-none" to="/members">Membros</RouterLink>
         <RouterLink class="text-decoration-none" to="/settings">Configurações</RouterLink>
       </template>

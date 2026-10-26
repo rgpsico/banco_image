@@ -10,10 +10,13 @@ const routes = [
   // Projetos e biblioteca (privados)
   { path: '/', name: 'dashboard', component: () => import('../views/DashboardView.vue'), meta: { auth: true } },
   { path: '/library', name: 'library', component: () => import('../views/LibraryView.vue'), meta: { auth: true } },
+  { path: '/galleries', name: 'galleries', component: () => import('../views/galleries/GalleriesView.vue'), meta: { auth: true } },
   { path: '/members', name: 'members', component: () => import('../views/MembersView.vue'), meta: { auth: true } },
   { path: '/settings', name: 'settings', component: () => import('../views/SettingsView.vue'), meta: { auth: true } },
 
   // Marketplace público
+  // Galeria PÚBLICA (sem login e sem menus): o link que o cliente do cliente recebe
+  { path: '/g/:token', name: 'gallery', component: () => import('../views/galleries/GalleryPublicView.vue'), meta: { bare: true } },
   { path: '/market', name: 'market', component: () => import('../views/market/MarketHome.vue') },
   { path: '/market/search', name: 'market-search', component: () => import('../views/market/MarketSearch.vue') },
   { path: '/market/listing/:id', name: 'listing', component: () => import('../views/market/ListingDetail.vue') },

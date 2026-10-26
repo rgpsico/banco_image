@@ -18,7 +18,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[Fillable([
     'tenant_id', 'uploaded_by', 'type', 'original_name', 'display_name', 'disk', 'path', 'mime_type',
-    'extension', 'size_bytes', 'checksum_sha256', 'width', 'height', 'duration_seconds', 'metadata', 'status',
+    'extension', 'size_bytes', 'checksum_sha256', 'width', 'height', 'duration_seconds', 'metadata', 'status', 'taken_at',
 ])]
 // Caminho interno, disco e ids numéricos nunca saem pela API.
 #[Hidden(['id', 'tenant_id', 'uploaded_by', 'disk', 'path', 'checksum_sha256'])]
@@ -35,6 +35,7 @@ class Media extends Model
             'status' => MediaStatus::class,
             'metadata' => 'array',
             'size_bytes' => 'integer',
+            'taken_at' => 'datetime',
         ];
     }
 

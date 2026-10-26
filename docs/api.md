@@ -63,6 +63,17 @@ e por `download-url` (2 min). Sem assinatura, adulterada ou expirada: `403`.
 Respostas de mídia **nunca** trazem caminho, disco ou ids numéricos: só `thumbnail_url`, `preview_url` e (vídeo) `stream_url` assinadas.
 
 
+## Galerias públicas ([galleries.md](galleries.md))
+| Método | Rota | Descrição |
+|---|---|---|
+| GET | `/galleries/{token}` | Sem login. Título, projeto, `allow_download`, `today` e os dias com fotos (`days`) |
+| GET | `/galleries/{token}/photos?date=YYYY-MM-DD&page=` | Fotos do dia (padrão: hoje), na ordem em que foram tiradas, 48 por página |
+| GET | `/galleries/{token}/photos/{id}/{thumb\|view}` | Imagem com marca d'água (ou limpa, se a galeria não usa marca) |
+| GET | `/galleries/{token}/photos/{id}/download` | Original como anexo. `403` se o download estiver desligado |
+| GET/POST | `/tenants/{tenant}/galleries` | Lista / cria (admin do projeto). `title`, `collection`, `allow_download` (padrão `false`), `watermark` (padrão `true`) |
+| PATCH/DELETE | `/tenants/{tenant}/galleries/{id}` | Edita (`is_active` inclusive) / exclui |
+| POST | `/tenants/{tenant}/galleries/{id}/rotate-link` | Troca o link; o antigo para de funcionar |
+
 ## Integração com outros sistemas (chave de API do projeto)
 Guia completo com exemplos: [integration.md](integration.md).
 
@@ -72,6 +83,8 @@ Guia completo com exemplos: [integration.md](integration.md).
 | DELETE | `/tenants/{tenant}/api-keys/{id}` | Revoga |
 | GET | `/integration/me` · `/media` · `/media/{id}` · `/collections` | Leitura do projeto da chave (`Authorization: Bearer mhk_...`) |
 | GET | `/integration/media/{id}/file/{thumb\|preview\|original}` | Arquivo direto (exige a chave) |
+| POST | `/integration/photos` · `/integration/gallery` | **Enviar** foto / garantir a galeria. Só com chave criada com a permissão de envio (`can_write`). Ver [galleries.md](galleries.md) |
+| GET | `/integration/galleries` | Galerias do projeto com o link |
 
 ## Marketplace (Fase 3)
 

@@ -1,6 +1,6 @@
 <script setup>
 import { onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from './stores/auth'
 import { useTenantStore } from './stores/tenant'
 import { useSellerStore } from './stores/seller'
@@ -11,6 +11,7 @@ const auth = useAuthStore()
 const tenants = useTenantStore()
 const seller = useSellerStore()
 const router = useRouter()
+const route = useRoute()
 
 onMounted(() => {
   // Token expirado/revogado em qualquer chamada: volta para o login.
@@ -19,8 +20,12 @@ onMounted(() => {
 </script>
 
 <template>
-  <AppNavbar />
-  <main class="container py-4">
-    <RouterView />
-  </main>
+  <!-- Galeria pública (meta.bare): tela cheia, sem menu do MediaHub -->
+  <RouterView v-if="route.meta.bare" />
+  <template v-else>
+    <AppNavbar />
+    <main class="container py-4">
+      <RouterView />
+    </main>
+  </template>
 </template>

@@ -27,6 +27,7 @@ class TenantApiKeyController extends Controller
         $v = $request->validate([
             'name' => ['required', 'string', 'min:2', 'max:80'],
             'expires_in_days' => ['nullable', 'integer', 'min:1', 'max:3650'],
+            'can_write' => ['sometimes', 'boolean'], // permite enviar fotos (por padrão a chave só lê)
         ]);
 
         $active = TenantApiKey::where('tenant_id', $tenant->id)->whereNull('revoked_at')->count();
@@ -34,7 +35,7 @@ class TenantApiKeyController extends Controller
             throw ValidationException::withMessages(['name' => ['Limite de ' . TenantApiKey::MAX_ACTIVE_PER_TENANT . ' chaves ativas. Revogue alguma antes de criar outra.']]);
         }
 
-        [$key, $plain] = TenantApiKey::issue($tenant, trim(strip_tags($v['name'])), $request->user(), isset($v['expires_in_days']) ? now()->addDays((int) $v['expires_in_days']) : null);
+        [$key, $plain] = TenantApiKey::issue($tenant, trim(strip_tags($v['name'])), $request->user(), isset($v['expires_in_days']) ? now()->addDays((int) $v['expires_in_days']) : null, (bool) ($v['can_write'] ?? false));
         Audit::record('apikey.created', ['key' => $key->ulid, 'tenant_key_prefix' => $key->prefix]);
 
         return response()->json(['data' => $this->present($key->load('creator')) + ['key' => $plain]], 201, ['Cache-Control' => 'no-store']);
@@ -57,7 +58,7 @@ class TenantApiKeyController extends Controller
     private function present(TenantApiKey $k): array
     {
         return [
-            'id' => $k->ulid, 'name' => $k->name, 'prefix' => $k->prefix,
+            'id' => $k->ulid, 'name' => $k->name, 'prefix' => $k->prefix, 'can_write' => $k->can('write'),
             'status' => $k->revoked_at ? 'revoked' : ($k->expires_at?->isPast() ? 'expired' : 'active'),
             'created_by' => $k->creator?->name, 'created_at' => $k->created_at?->toIso8601String(),
             'last_used_at' => $k->last_used_at?->toIso8601String(), 'expires_at' => $k->expires_at?->toIso8601String(),

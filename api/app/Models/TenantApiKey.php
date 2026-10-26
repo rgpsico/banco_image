@@ -13,7 +13,7 @@ use Illuminate\Support\Str;
  * Chave de acesso (somente leitura) de UM projeto, para outros sistemas buscarem as imagens dele.
  * A chave completa só existe no momento da criação; no banco fica apenas o hash.
  */
-#[Fillable(['tenant_id', 'created_by', 'name', 'prefix', 'key_hash', 'last_used_at', 'expires_at', 'revoked_at'])]
+#[Fillable(['tenant_id', 'created_by', 'name', 'prefix', 'key_hash', 'scopes', 'last_used_at', 'expires_at', 'revoked_at'])]
 #[Hidden(['id', 'tenant_id', 'created_by', 'key_hash'])]
 class TenantApiKey extends Model
 {
@@ -39,13 +39,13 @@ class TenantApiKey extends Model
     }
 
     /** @return array{0: TenantApiKey, 1: string} o modelo e a chave em texto puro (mostrar UMA vez) */
-    public static function issue(Tenant $tenant, string $name, ?User $by, ?\DateTimeInterface $expiresAt): array
+    public static function issue(Tenant $tenant, string $name, ?User $by, ?\DateTimeInterface $expiresAt, bool $canWrite = false): array
     {
         $plain = self::PREFIX . Str::random(48);
 
         $key = self::create([
             'tenant_id' => $tenant->id, 'created_by' => $by?->id, 'name' => $name,
-            'prefix' => substr($plain, 0, 12), 'key_hash' => self::hash($plain), 'expires_at' => $expiresAt,
+            'prefix' => substr($plain, 0, 12), 'key_hash' => self::hash($plain), 'scopes' => $canWrite ? 'read,write' : 'read', 'expires_at' => $expiresAt,
         ]);
 
         return [$key, $plain];
@@ -54,6 +54,12 @@ class TenantApiKey extends Model
     public static function hash(string $plain): string
     {
         return hash('sha256', $plain);
+    }
+
+    /** "read" vale para toda chave; "write" (enviar fotos) só para as criadas com essa permissão. */
+    public function can(string $ability): bool
+    {
+        return in_array($ability, explode(',', (string) $this->scopes), true);
     }
 
     public function isUsable(): bool

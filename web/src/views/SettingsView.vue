@@ -26,6 +26,7 @@ async function save() {
 const keys = ref([])
 const keyName = ref('')
 const keyDays = ref('')
+const keyWrite = ref(false)
 const keyBusy = ref(false)
 const keyError = ref('')
 const newKey = ref(null) // { name, key } — a chave completa só existe aqui, logo após criar
@@ -43,9 +44,9 @@ watch(() => tenants.currentId, () => { newKey.value = null; loadKeys() }, { imme
 async function createKey() {
   keyBusy.value = true; keyError.value = ''; copied.value = false
   try {
-    const { data } = await api.post(`/tenants/${tenants.currentId}/api-keys`, { name: keyName.value, expires_in_days: keyDays.value ? Number(keyDays.value) : null })
+    const { data } = await api.post(`/tenants/${tenants.currentId}/api-keys`, { name: keyName.value, expires_in_days: keyDays.value ? Number(keyDays.value) : null, can_write: keyWrite.value })
     newKey.value = { name: data.data.name, key: data.data.key }
-    keyName.value = ''; keyDays.value = ''
+    keyName.value = ''; keyDays.value = ''; keyWrite.value = false
     await loadKeys()
   } catch (e) { keyError.value = parseError(e).message } finally { keyBusy.value = false }
 }
@@ -107,12 +108,14 @@ async function destroy() {
               <option value="">Sem expiração</option><option value="30">30 dias</option><option value="90">90 dias</option><option value="365">1 ano</option>
             </select></div>
           <div class="col-sm-3"><LoadingButton :loading="keyBusy" class="w-100">Criar chave</LoadingButton></div>
+          <div class="col-12"><div class="form-check"><input id="key-write" v-model="keyWrite" class="form-check-input" type="checkbox" />
+            <label class="form-check-label small" for="key-write">Permitir <strong>enviar fotos</strong> (para um site seu mandar fotos para a galeria). Sem isto a chave só lê.</label></div></div>
         </form>
 
         <div v-if="keys.length" class="table-responsive mb-3"><table class="table table-sm align-middle mb-0">
           <thead><tr><th>Nome</th><th>Chave</th><th>Último uso</th><th>Status</th><th></th></tr></thead>
           <tbody><tr v-for="k in keys" :key="k.id" class="api-key-row">
-            <td>{{ k.name }}<div class="small text-muted">por {{ k.created_by || '—' }} · {{ formatDate(k.created_at) }}</div></td>
+            <td>{{ k.name }} <span v-if="k.can_write" class="badge text-bg-warning">envia fotos</span><div class="small text-muted">por {{ k.created_by || '—' }} · {{ formatDate(k.created_at) }}</div></td>
             <td class="font-monospace small">{{ k.prefix }}…</td>
             <td class="small">{{ k.last_used_at ? formatDate(k.last_used_at) : 'nunca' }}<div v-if="k.expires_at" class="text-muted">expira {{ formatDate(k.expires_at) }}</div></td>
             <td><span class="badge" :class="k.status === 'active' ? 'text-bg-success' : 'text-bg-secondary'">{{ statusLabel[k.status] || k.status }}</span></td>

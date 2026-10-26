@@ -19,7 +19,8 @@ class AuthenticateApiKey
     {
     }
 
-    public function handle(Request $request, Closure $next): Response
+    /** Uso: tenant.key (leitura) ou tenant.key:write (precisa da permissão de envio). */
+    public function handle(Request $request, Closure $next, string $ability = 'read'): Response
     {
         $plain = $request->bearerToken() ?: $request->header('X-Api-Key');
 
@@ -31,6 +32,10 @@ class AuthenticateApiKey
 
         if (! $key || ! $key->isUsable() || ! $key->tenant) {
             return $this->deny();
+        }
+
+        if (! $key->can($ability)) {
+            return response()->json(['message' => 'Esta chave não tem permissão para esta operação.'], 403);
         }
 
         // Uma gravação por minuto no máximo, para a lista mostrar "último uso" sem sobrecarregar o banco.

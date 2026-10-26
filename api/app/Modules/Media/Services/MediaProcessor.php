@@ -30,6 +30,7 @@ class MediaProcessor
             $this->storage->withLocalCopy($media->path, function (string $local) use ($media) {
                 $this->buildVariants($media, $local, $media->mime_type);
                 $media->update(['metadata' => $this->metadata($local, $media->mime_type), 'status' => MediaStatus::Ready]);
+                rescue(fn () => \App\Modules\Galleries\Jobs\GenerateGalleryVariants::dispatchFor($media->fresh())); // nunca falha a foto por causa da galeria
             });
         } catch (\Throwable $e) {
             Log::warning('Falha ao processar mídia', ['media' => $media->ulid, 'erro' => $e->getMessage()]);
