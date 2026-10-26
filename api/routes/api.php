@@ -20,6 +20,7 @@ use App\Modules\Media\Http\Controllers\FileController;
 use App\Modules\Media\Http\Controllers\IntegrationController;
 use App\Modules\Media\Http\Controllers\IntegrationPhotoController;
 use App\Modules\Tenants\Http\Controllers\TenantApiKeyController;
+use App\Modules\Tenants\Http\Controllers\TenantOverviewController;
 use App\Modules\Media\Http\Controllers\MediaController;
 use App\Modules\Media\Http\Controllers\UploadController;
 use App\Modules\Tenants\Http\Controllers\TenantController;
@@ -152,6 +153,7 @@ Route::prefix('v1')->group(function () {
 
         // Recursos do projeto: o middleware "tenant" fixa o projeto atual (e o isolamento) antes dos controllers.
         Route::prefix('tenants/{tenant}')->middleware('tenant')->group(function () {
+            Route::get('overview', [TenantOverviewController::class, 'show']);
             Route::get('galleries', [GalleryController::class, 'index']);
             Route::post('galleries', [GalleryController::class, 'store'])->middleware('throttle:30,1');
             Route::patch('galleries/{gallery}', [GalleryController::class, 'update']);

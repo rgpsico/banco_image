@@ -4,12 +4,14 @@ import { useTenantStore } from '../stores/tenant'
 import { uploadFile, validateFile, ACCEPT_ATTR } from '../services/upload'
 import { parseError } from '../services/api'
 import { formatBytes } from '../utils/format'
+import Icon from './Icon.vue'
 
 const emit = defineEmits(['uploaded'])
 const tenants = useTenantStore()
 const queue = ref([]) // { id, file, progress, status: queued|uploading|done|error|cancelled, error, controller }
 const dragging = ref(false)
 const input = ref(null)
+const camera = ref(null)
 const CONCURRENCY = 2
 let seq = 0
 
@@ -60,12 +62,16 @@ const label = { queued: 'Na fila', uploading: 'Enviando', done: 'Concluído', er
 <template>
   <div class="mb-3">
     <div
-      class="dropzone text-center p-4" :class="{ drag: dragging }"
+      class="dropzone text-center" :class="{ drag: dragging }"
       @dragover.prevent="dragging = true" @dragleave.prevent="dragging = false" @drop.prevent="onDrop"
     >
-      <div class="mb-2">Arraste imagens e vídeos aqui, ou</div>
-      <button class="btn btn-primary btn-sm" type="button" @click="input.click()">Escolher arquivos</button>
+      <div class="dz-text d-none d-md-block mb-2">Arraste imagens e vídeos aqui, ou</div>
+      <div class="dz-actions">
+        <button class="btn btn-primary" type="button" @click="input.click()"><Icon name="upload" :size="18" /> Enviar fotos</button>
+        <button class="btn btn-outline-primary d-md-none" type="button" @click="camera.click()"><Icon name="camera" :size="18" /> Tirar foto</button>
+      </div>
       <input ref="input" type="file" class="d-none" multiple :accept="ACCEPT_ATTR" @change="onPick" />
+      <input ref="camera" type="file" class="d-none" accept="image/*" capture="environment" @change="onPick" />
       <div class="small text-muted mt-2">JPG, PNG, WebP e GIF até 25 MB · MP4, WebM e MOV até 500 MB</div>
     </div>
 
@@ -93,6 +99,9 @@ const label = { queued: 'Na fila', uploading: 'Enviando', done: 'Concluído', er
 
 <style scoped>
 .upload-list { max-height: 220px; overflow-y: auto; }
-.dropzone { border: 2px dashed #b9c2d8; border-radius: 12px; background: #fff; transition: all .15s; }
-.dropzone.drag { border-color: #0d6efd; background: #eef4ff; }
+.dropzone { border: 2px dashed #e3c6b3; border-radius: var(--mh-radius); background: var(--mh-brand-soft); padding: 1.1rem; transition: all .15s; }
+.dropzone.drag { border-color: var(--mh-brand); background: #ffe3d1; }
+.dz-actions { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.dz-actions .btn { white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; }
+@media (max-width: 767.98px) { .dz-actions .btn { flex: 1 1 0; justify-content: center; } }
 </style>

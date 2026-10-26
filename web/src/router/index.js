@@ -8,11 +8,11 @@ const routes = [
   { path: '/reset-password', name: 'reset', component: () => import('../views/ResetPasswordView.vue'), meta: { guest: true } },
 
   // Projetos e biblioteca (privados)
-  { path: '/', name: 'dashboard', component: () => import('../views/DashboardView.vue'), meta: { auth: true } },
-  { path: '/library', name: 'library', component: () => import('../views/LibraryView.vue'), meta: { auth: true } },
-  { path: '/galleries', name: 'galleries', component: () => import('../views/galleries/GalleriesView.vue'), meta: { auth: true } },
-  { path: '/members', name: 'members', component: () => import('../views/MembersView.vue'), meta: { auth: true } },
-  { path: '/settings', name: 'settings', component: () => import('../views/SettingsView.vue'), meta: { auth: true } },
+  { path: '/', name: 'dashboard', component: () => import('../views/DashboardView.vue'), meta: { auth: true, layout: 'project' } },
+  { path: '/library', name: 'library', component: () => import('../views/LibraryView.vue'), meta: { auth: true, layout: 'project' } },
+  { path: '/galleries', name: 'galleries', component: () => import('../views/galleries/GalleriesView.vue'), meta: { auth: true, layout: 'project' } },
+  { path: '/members', name: 'members', component: () => import('../views/MembersView.vue'), meta: { auth: true, layout: 'project' } },
+  { path: '/settings', name: 'settings', component: () => import('../views/SettingsView.vue'), meta: { auth: true, layout: 'project' } },
 
   // Marketplace público
   // Galeria PÚBLICA (sem login e sem menus): o link que o cliente do cliente recebe

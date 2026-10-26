@@ -9,11 +9,13 @@ import MediaGrid from '../components/MediaGrid.vue'
 import MediaModal from '../components/MediaModal.vue'
 import CollectionSidebar from '../components/CollectionSidebar.vue'
 import PaginationBar from '../components/PaginationBar.vue'
+import Icon from '../components/Icon.vue'
 
 const tenants = useTenantStore()
 const media = useMediaStore()
 const collections = useCollectionsStore()
 const selected = ref(null)
+const wide = ref(typeof window !== 'undefined' && window.matchMedia('(min-width: 992px)').matches)
 const search = ref(media.filters.search)
 let debounce = null
 let poll = null
@@ -50,8 +52,11 @@ onBeforeUnmount(() => { clearTimeout(poll); clearTimeout(debounce) })
 
   <div v-else class="row g-4">
     <div class="col-lg-3">
-      <CollectionSidebar :active="media.filters.collection" @select="selectCollection" />
-      <div v-if="quota" class="card shadow-sm mt-3">
+      <details class="folders" :open="wide">
+        <summary class="d-lg-none"><Icon name="folder" :size="18" /> Pastas<span v-if="media.filters.collection" class="badge text-bg-primary ms-2">filtrando</span></summary>
+        <CollectionSidebar :active="media.filters.collection" @select="selectCollection" />
+      </details>
+      <div v-if="quota" class="card mt-3 d-none d-lg-block">
         <div class="card-body p-3">
           <div class="small fw-semibold">Armazenamento</div>
           <div class="progress my-1" style="height: 6px"><div class="progress-bar" :class="{ 'bg-danger': quotaPct > 90 }" :style="{ width: quotaPct + '%' }"></div></div>
@@ -61,10 +66,12 @@ onBeforeUnmount(() => { clearTimeout(poll); clearTimeout(debounce) })
     </div>
 
     <div class="col-lg-9">
-      <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
-        <h1 class="h4 mb-0 me-auto">Biblioteca · {{ tenants.current.name }}</h1>
-        <input v-model="search" class="form-control form-control-sm" style="width: 220px" type="search" placeholder="Buscar por nome" aria-label="Buscar" @input="onSearch" />
-        <select v-model="media.filters.type" class="form-select form-select-sm" style="width: 150px" aria-label="Tipo" @change="media.filters.page = 1">
+      <div class="page-head">
+        <div><h1>Biblioteca</h1><p>{{ tenants.current.name }}</p></div>
+      </div>
+      <div class="filters mb-3">
+        <input v-model="search" class="form-control" type="search" placeholder="Buscar por nome" aria-label="Buscar" @input="onSearch" />
+        <select v-model="media.filters.type" class="form-select" aria-label="Tipo" @change="media.filters.page = 1">
           <option value="">Todos os tipos</option>
           <option value="image">Imagens</option>
           <option value="video">Vídeos</option>
@@ -79,7 +86,7 @@ onBeforeUnmount(() => { clearTimeout(poll); clearTimeout(debounce) })
       <div v-else-if="!media.items.length" class="text-center text-muted py-5 empty-state">
         <div class="fs-1" aria-hidden="true">🖼</div>
         <div v-if="media.filters.search || media.filters.type || media.filters.collection">Nada encontrado com esses filtros.</div>
-        <div v-else>Sua biblioteca está vazia. Envie a primeira imagem ou vídeo acima.</div>
+        <div v-else>Sua biblioteca está vazia. Envie a primeira foto ou vídeo no quadro acima.</div>
       </div>
       <MediaGrid v-else :items="media.items" @open="selected = $event" />
 
@@ -89,3 +96,11 @@ onBeforeUnmount(() => { clearTimeout(poll); clearTimeout(debounce) })
     <MediaModal v-if="selected" :media="selected" @close="selected = null" @changed="onMediaChanged" @deleted="selected = null; refreshAll()" />
   </div>
 </template>
+
+<style scoped>
+.filters { display: grid; grid-template-columns: 1fr 180px; gap: 8px; }
+.folders summary { cursor: pointer; font-weight: 600; padding: 10px 14px; background: #fff; border: 1px solid var(--mh-line); border-radius: var(--mh-radius); list-style: none; display: flex; align-items: center; gap: 8px; }
+.folders summary::-webkit-details-marker { display: none; }
+.folders[open] summary { margin-bottom: 8px; }
+@media (max-width: 575.98px) { .filters { grid-template-columns: 1fr; } }
+</style>

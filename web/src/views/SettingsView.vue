@@ -69,7 +69,7 @@ async function destroy() {
 <template>
   <div v-if="!tenants.current" class="alert alert-info">Selecione ou crie um projeto primeiro.</div>
   <div v-else style="max-width: 760px">
-    <h1 class="h4 mb-3">Configurações do projeto</h1>
+    <div class="page-head"><div><h1>Configurações</h1><p>Nome, chaves de API e exclusão do projeto.</p></div></div>
     <FormAlert :message="error" />
     <FormAlert :message="ok" type="success" />
     <div class="card shadow-sm mb-4">

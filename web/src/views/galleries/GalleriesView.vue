@@ -6,6 +6,7 @@ import { useTenantStore } from '../../stores/tenant'
 import { useCollectionsStore } from '../../stores/collections'
 import FormAlert from '../../components/FormAlert.vue'
 import LoadingButton from '../../components/LoadingButton.vue'
+import Icon from '../../components/Icon.vue'
 
 const tenants = useTenantStore()
 const collections = useCollectionsStore()
@@ -15,6 +16,7 @@ const error = ref('')
 const title = ref('')
 const folder = ref('')
 const creating = ref(false)
+const showNew = ref(false)
 const copied = ref('')
 const qr = ref(null) // { gallery, dataUrl }
 const confirm = ref(null) // { kind: 'rotate' | 'delete', gallery }
@@ -32,7 +34,7 @@ async function create() {
   creating.value = true; error.value = ''
   try {
     await api.post(`/tenants/${tenants.currentId}/galleries`, { title: title.value, collection: folder.value || null })
-    title.value = ''; folder.value = ''
+    title.value = ''; folder.value = ''; showNew.value = false
     await load()
   } catch (e) { error.value = parseError(e).message } finally { creating.value = false }
 }
@@ -78,63 +80,82 @@ async function runConfirm() {
   } catch (e) { error.value = parseError(e).message; confirm.value = null }
 }
 </script>
-
 <template>
   <div v-if="!tenants.current" class="alert alert-info">Selecione ou crie um projeto primeiro.</div>
   <div v-else-if="!tenants.can('admin')" class="alert alert-warning">Somente administradores do projeto gerenciam as galerias.</div>
-  <div v-else style="max-width: 880px">
-    <h1 class="h4 mb-1">Galerias</h1>
-    <p class="text-muted small">Crie uma galeria e envie o link (ou o QR code) para os seus clientes. Eles veem as fotos <strong>por data</strong>, começando por hoje, sem login e sem pagamento. As fotos aparecem com <strong>marca d'água</strong> e o <strong>download fica desligado</strong>, a não ser que você libere.</p>
+  <div v-else>
+    <div class="page-head">
+      <div><h1>Galerias</h1><p>O link (ou QR code) que o seu cliente abre para ver as fotos por data. Sem login e sem pagamento.</p></div>
+      <div class="page-actions"><button class="btn btn-primary" type="button" @click="showNew = !showNew"><Icon name="plus" :size="18" /> Nova galeria</button></div>
+    </div>
     <FormAlert :message="error" />
 
-    <form class="card shadow-sm mb-4" @submit.prevent="create"><div class="card-body row g-2 align-items-end">
-      <div class="col-md-5"><label class="form-label small mb-1" for="g-title">Nome da galeria</label>
-        <input id="g-title" v-model="title" class="form-control" placeholder="Ex.: Passeio de domingo" maxlength="120" required /></div>
-      <div class="col-md-4"><label class="form-label small mb-1" for="g-folder">Quais fotos?</label>
-        <select id="g-folder" v-model="folder" class="form-select">
-          <option value="">Todas as fotos do projeto</option>
-          <option v-for="c in collections.items" :key="c.id" :value="c.id">Só a pasta: {{ c.name }}</option>
-        </select></div>
-      <div class="col-md-3"><LoadingButton :loading="creating" class="w-100">Criar galeria</LoadingButton></div>
+    <form v-if="showNew || (!loading && !list.length)" class="card mb-4" @submit.prevent="create"><div class="card-body">
+      <h2 class="h6 mb-3">Nova galeria</h2>
+      <div class="row g-2 align-items-end">
+        <div class="col-md-5"><label class="form-label small mb-1" for="g-title">Nome da galeria</label>
+          <input id="g-title" v-model="title" class="form-control" placeholder="Ex.: Passeio de domingo" maxlength="120" required /></div>
+        <div class="col-md-4"><label class="form-label small mb-1" for="g-folder">Quais fotos?</label>
+          <select id="g-folder" v-model="folder" class="form-select">
+            <option value="">Todas as fotos do projeto</option>
+            <option v-for="c in collections.items" :key="c.id" :value="c.id">Só a pasta: {{ c.name }}</option>
+          </select></div>
+        <div class="col-md-3"><LoadingButton :loading="creating" class="w-100">Criar galeria</LoadingButton></div>
+      </div>
+      <p class="form-text mb-0 mt-2">Nasce com <strong>marca d'água ligada</strong> e <strong>download desligado</strong>. Dá para mudar depois.</p>
     </div></form>
 
     <div v-if="loading" class="text-center py-4"><div class="spinner-border"></div></div>
-    <div v-else-if="!list.length" class="text-center text-muted py-5 empty-state">
-      <div class="fs-1" aria-hidden="true">🖼️</div><p class="mb-1">Nenhuma galeria ainda.</p><p class="small">Crie a primeira acima e mande o link para os seus clientes.</p>
+    <div v-else-if="!list.length" class="text-center text-muted py-4 empty-state">
+      <div class="fs-1" aria-hidden="true">🖼️</div>
+      <p class="mb-1">Nenhuma galeria ainda.</p>
+      <p class="small mb-0">Dica: envie primeiro as fotos na <RouterLink to="/library">Biblioteca</RouterLink>, depois crie a galeria.</p>
     </div>
 
-    <div v-for="g in list" :key="g.id" class="card shadow-sm mb-3 gallery-item" :class="{ 'opacity-75': !g.is_active }"><div class="card-body">
-      <div class="d-flex justify-content-between align-items-start gap-2">
-        <div><h2 class="h6 mb-0">{{ g.title }}</h2>
-          <div class="small text-muted">{{ g.collection ? `Pasta: ${g.collection.name}` : 'Todas as fotos do projeto' }} · {{ g.photos_count }} {{ g.photos_count === 1 ? 'foto' : 'fotos' }} · {{ g.views_count }} {{ g.views_count === 1 ? 'visita' : 'visitas' }}</div></div>
-        <span class="badge" :class="g.is_active ? 'text-bg-success' : 'text-bg-secondary'">{{ g.is_active ? 'Ativa' : 'Desativada' }}</span>
-      </div>
+    <div v-else class="row g-3">
+      <div v-for="g in list" :key="g.id" class="col-12 col-xl-6"><div class="card gallery-item h-100" :class="{ 'opacity-75': !g.is_active }">
+        <!-- Prévia: miniaturas das fotos mais recentes -->
+        <div v-if="g.thumbs && g.thumbs.length" class="strip"><img v-for="(u, i) in g.thumbs" :key="i" :src="u" alt="" loading="lazy" /></div>
+        <div v-else class="strip strip-empty"><div><Icon name="image" :size="28" /><div class="small mt-1">Sem fotos ainda. <RouterLink to="/library">Envie na Biblioteca</RouterLink></div></div></div>
 
-      <div class="input-group my-3">
-        <input :id="'url-' + g.id" class="form-control font-monospace small" readonly :value="g.public_url" @focus="$event.target.select()" aria-label="Link da galeria" />
-        <button class="btn btn-dark" type="button" @click="copy(g)">{{ copied === g.id ? 'Copiado ✓' : 'Copiar' }}</button>
-      </div>
-      <div class="d-flex flex-wrap gap-2 mb-3">
-        <a class="btn btn-sm btn-outline-secondary" :href="g.public_url" target="_blank" rel="noopener">Abrir</a>
-        <a class="btn btn-sm btn-success" :href="whatsapp(g)" target="_blank" rel="noopener">Enviar pelo WhatsApp</a>
-        <button class="btn btn-sm btn-outline-primary" type="button" @click="showQr(g)">QR code</button>
-      </div>
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start gap-2">
+            <div class="min-w-0"><h2 class="h6 mb-1 text-truncate">{{ g.title }}</h2>
+              <div class="small text-muted">{{ g.collection ? `Pasta: ${g.collection.name}` : 'Todas as fotos do projeto' }}</div></div>
+            <span class="badge" :class="g.is_active ? 'text-bg-success' : 'text-bg-secondary'">{{ g.is_active ? 'Ativa' : 'Desativada' }}</span>
+          </div>
+          <div class="d-flex gap-3 small text-muted my-2"><span><Icon name="image" :size="14" /> {{ g.photos_count }} {{ g.photos_count === 1 ? 'foto' : 'fotos' }}</span><span><Icon name="eye" :size="14" /> {{ g.views_count }} {{ g.views_count === 1 ? 'visita' : 'visitas' }}</span></div>
 
-      <div class="d-flex flex-wrap gap-4 small">
-        <div class="form-check form-switch"><input :id="'dl-' + g.id" class="form-check-input" type="checkbox" role="switch" :checked="g.allow_download" @change="patch(g, { allow_download: $event.target.checked })" />
-          <label class="form-check-label" :for="'dl-' + g.id">Permitir baixar as fotos</label></div>
-        <div class="form-check form-switch"><input :id="'wm-' + g.id" class="form-check-input" type="checkbox" role="switch" :checked="g.watermark" @change="patch(g, { watermark: $event.target.checked })" />
-          <label class="form-check-label" :for="'wm-' + g.id">Marca d'água nas fotos</label></div>
-        <div class="form-check form-switch"><input :id="'on-' + g.id" class="form-check-input" type="checkbox" role="switch" :checked="g.is_active" @change="patch(g, { is_active: $event.target.checked })" />
-          <label class="form-check-label" :for="'on-' + g.id">Galeria ativa</label></div>
-      </div>
-      <p v-if="g.allow_download" class="small text-warning mb-0 mt-2">Atenção: com o download liberado, quem tem o link baixa o <strong>original sem marca d'água</strong>.</p>
+          <div class="linkbox">
+            <input :id="'url-' + g.id" class="form-control font-monospace" readonly :value="g.public_url" aria-label="Link da galeria" @focus="$event.target.select()" />
+            <button class="btn btn-dark" type="button" @click="copy(g)"><Icon :name="copied === g.id ? 'check' : 'copy'" :size="18" /> {{ copied === g.id ? 'Copiado' : 'Copiar' }}</button>
+          </div>
 
-      <div class="mt-3 pt-2 border-top d-flex gap-3 small">
-        <button class="btn btn-link btn-sm p-0" type="button" @click="confirm = { kind: 'rotate', gallery: g }">Trocar o link</button>
-        <button class="btn btn-link btn-sm p-0 text-danger" type="button" @click="confirm = { kind: 'delete', gallery: g }">Excluir galeria</button>
-      </div>
-    </div></div>
+          <div class="actions">
+            <a class="btn btn-success" :href="whatsapp(g)" target="_blank" rel="noopener">WhatsApp</a>
+            <button class="btn btn-outline-primary" type="button" @click="showQr(g)"><Icon name="qr" :size="18" /> QR code</button>
+            <a class="btn btn-outline-secondary" :href="g.public_url" target="_blank" rel="noopener"><Icon name="external" :size="16" /> Ver página</a>
+          </div>
+
+          <details class="opts mt-3">
+            <summary>Opções da galeria</summary>
+            <div class="d-grid gap-2 mt-3">
+              <div class="form-check form-switch"><input :id="'dl-' + g.id" class="form-check-input" type="checkbox" role="switch" :checked="g.allow_download" @change="patch(g, { allow_download: $event.target.checked })" />
+                <label class="form-check-label" :for="'dl-' + g.id"><strong>Permitir baixar as fotos</strong><br><span class="small text-muted">Desligado: o cliente só vê as fotos.</span></label></div>
+              <div class="form-check form-switch"><input :id="'wm-' + g.id" class="form-check-input" type="checkbox" role="switch" :checked="g.watermark" @change="patch(g, { watermark: $event.target.checked })" />
+                <label class="form-check-label" :for="'wm-' + g.id"><strong>Marca d'água nas fotos</strong><br><span class="small text-muted">Escreve o nome do projeto por cima da foto.</span></label></div>
+              <div class="form-check form-switch"><input :id="'on-' + g.id" class="form-check-input" type="checkbox" role="switch" :checked="g.is_active" @change="patch(g, { is_active: $event.target.checked })" />
+                <label class="form-check-label" :for="'on-' + g.id"><strong>Galeria ativa</strong><br><span class="small text-muted">Desativada, o link para de abrir.</span></label></div>
+            </div>
+            <p v-if="g.allow_download" class="small text-warning mt-2 mb-0">Atenção: com o download liberado, quem tem o link baixa o <strong>original sem marca d'água</strong>.</p>
+            <div class="mt-3 pt-2 border-top d-flex gap-3 small">
+              <button class="btn btn-link btn-sm p-0" type="button" @click="confirm = { kind: 'rotate', gallery: g }">Trocar o link</button>
+              <button class="btn btn-link btn-sm p-0 text-danger" type="button" @click="confirm = { kind: 'delete', gallery: g }">Excluir galeria</button>
+            </div>
+          </details>
+        </div>
+      </div></div>
+    </div>
 
     <!-- QR code -->
     <div v-if="qr" class="modal d-block" tabindex="-1" style="background: rgba(0,0,0,.55)" role="dialog" aria-modal="true" @click.self="qr = null">
@@ -159,3 +180,20 @@ async function runConfirm() {
     </div>
   </div>
 </template>
+
+<style scoped>
+.min-w-0 { min-width: 0; }
+.strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px; aspect-ratio: 4 / 1; background: #e9edf5; border-radius: var(--mh-radius) var(--mh-radius) 0 0; overflow: hidden; }
+.strip img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.strip-empty { display: flex; align-items: center; justify-content: center; text-align: center; color: var(--mh-muted); aspect-ratio: auto; min-height: 96px; }
+.linkbox { display: flex; gap: 8px; }
+.linkbox .form-control { font-size: .8rem; min-width: 0; }
+.linkbox .btn { white-space: nowrap; }
+.actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+.actions .btn { white-space: nowrap; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding-left: 8px; padding-right: 8px; font-size: .88rem; }
+.opts summary { cursor: pointer; font-weight: 600; font-size: .9rem; color: var(--mh-muted); list-style: none; padding: 6px 0; }
+.opts summary::-webkit-details-marker { display: none; }
+.opts summary::before { content: '⚙︎ '; }
+.opts[open] summary { color: var(--mh-ink); }
+@media (max-width: 575.98px) { .actions { grid-template-columns: 1fr; } .linkbox { flex-direction: column; } }
+</style>

@@ -6,6 +6,7 @@ import { useTenantStore } from './stores/tenant'
 import { useSellerStore } from './stores/seller'
 import { setUnauthorizedHandler } from './services/api'
 import AppNavbar from './components/AppNavbar.vue'
+import ProjectShell from './components/ProjectShell.vue'
 
 const auth = useAuthStore()
 const tenants = useTenantStore()
@@ -22,6 +23,8 @@ onMounted(() => {
 <template>
   <!-- Galeria pública (meta.bare): tela cheia, sem menu do MediaHub -->
   <RouterView v-if="route.meta.bare" />
+  <!-- Painel do projeto: menu lateral (computador) e abas (celular) -->
+  <ProjectShell v-else-if="route.meta.layout === 'project'"><RouterView /></ProjectShell>
   <template v-else>
     <AppNavbar />
     <main class="container py-4">

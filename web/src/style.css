@@ -1,4 +1,80 @@
-body { background: #f6f7fb; }
-.auth-card { max-width: 440px; margin: 8vh auto 0; }
-.brand { font-weight: 700; letter-spacing: -0.02em; }
+/* ===== MediaHub · tema do painel =====
+   Camada por cima do Bootstrap: cores da marca, cantos arredondados, foco visível e áreas de toque grandes no celular. */
+:root {
+  --mh-bg: #f5f6fa;
+  --mh-surface: #ffffff;
+  --mh-ink: #1c2230;
+  --mh-muted: #667085;
+  --mh-line: #e6e9f0;
+  --mh-brand: #f26a1b;
+  --mh-brand-dark: #d4560c;
+  --mh-brand-soft: #fff1e8;
+  --mh-radius: 14px;
+  --mh-shadow: 0 1px 2px rgba(16, 24, 40, .05), 0 6px 18px rgba(16, 24, 40, .06);
+  --mh-sidebar: 248px;
+  --mh-tabbar: 64px;
+  --bs-primary: #f26a1b;
+  --bs-primary-rgb: 242, 106, 27;
+  --bs-link-color: #d4560c;
+  --bs-link-color-rgb: 212, 86, 12;
+  --bs-link-hover-color: #b64709;
+  --bs-body-color: #1c2230;
+  --bs-body-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+body { background: var(--mh-bg); color: var(--mh-ink); -webkit-font-smoothing: antialiased; }
+h1, h2, h3, h4, h5 { letter-spacing: -0.015em; }
+.brand { font-weight: 800; letter-spacing: -0.03em; }
 .role-badge { text-transform: capitalize; }
+.auth-card { max-width: 440px; margin: 8vh auto 0; }
+
+/* Botões e campos */
+.btn { border-radius: 10px; font-weight: 600; }
+.btn-sm { border-radius: 9px; }
+.btn-primary { --bs-btn-bg: var(--mh-brand); --bs-btn-border-color: var(--mh-brand); --bs-btn-hover-bg: var(--mh-brand-dark); --bs-btn-hover-border-color: var(--mh-brand-dark);
+  --bs-btn-active-bg: #b64709; --bs-btn-active-border-color: #b64709; --bs-btn-disabled-bg: var(--mh-brand); --bs-btn-disabled-border-color: var(--mh-brand); --bs-btn-color: #fff; --bs-btn-hover-color: #fff; --bs-btn-active-color: #fff; }
+.btn-outline-primary { --bs-btn-color: var(--mh-brand-dark); --bs-btn-border-color: #f6b48a; --bs-btn-hover-bg: var(--mh-brand); --bs-btn-hover-border-color: var(--mh-brand); --bs-btn-hover-color: #fff;
+  --bs-btn-active-bg: var(--mh-brand-dark); --bs-btn-active-border-color: var(--mh-brand-dark); --bs-btn-active-color: #fff; }
+.form-control, .form-select { border-radius: 10px; border-color: #d5dae4; min-height: 42px; }
+.form-control:focus, .form-select:focus, .btn:focus-visible, .form-check-input:focus { border-color: var(--mh-brand); box-shadow: 0 0 0 .22rem rgba(242, 106, 27, .2); }
+.form-check-input:checked { background-color: var(--mh-brand); border-color: var(--mh-brand); }
+.progress { background: #edf0f6; border-radius: 999px; }
+.progress-bar { background: var(--mh-brand); border-radius: 999px; }
+.text-bg-primary { background-color: var(--mh-brand) !important; }
+.border-primary { border-color: var(--mh-brand) !important; }
+a { text-underline-offset: 2px; }
+
+/* Cartões */
+.card { border: 1px solid var(--mh-line); border-radius: var(--mh-radius); box-shadow: var(--mh-shadow) !important; background: var(--mh-surface); }
+.card-header { background: transparent; border-bottom-color: var(--mh-line); }
+.alert { border-radius: 12px; }
+.dropzone { border: 2px dashed #f0c4a6; border-radius: var(--mh-radius); background: var(--mh-brand-soft); transition: .15s; }
+.dropzone.drag { border-color: var(--mh-brand); background: #ffe3d1; }
+.empty-state { color: var(--mh-muted); }
+
+/* Cabeçalho de página: título + ações (empilha no celular) */
+.page-head { display: flex; flex-wrap: wrap; gap: 12px 16px; align-items: flex-end; justify-content: space-between; margin-bottom: 20px; }
+.page-head h1 { font-size: 1.55rem; font-weight: 800; margin: 0; }
+.page-head p { margin: 2px 0 0; color: var(--mh-muted); font-size: .95rem; }
+.page-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* Cartão de estatística */
+.stat { padding: 14px 16px; }
+.stat .num { font-size: 1.7rem; font-weight: 800; line-height: 1.1; }
+.stat .lbl { color: var(--mh-muted); font-size: .82rem; }
+
+/* Navbar dos módulos públicos (marketplace, vendedor, admin) */
+.navbar { position: sticky; top: 0; z-index: 1030; box-shadow: 0 1px 0 var(--mh-line); }
+.navbar .nav-link.router-link-active { color: var(--mh-brand-dark); font-weight: 600; }
+
+/* Ajustes para toque no celular */
+@media (max-width: 575.98px) {
+  .btn { min-height: 44px; }
+  .btn-sm { min-height: 40px; padding-left: 12px; padding-right: 12px; }
+  .page-head h1 { font-size: 1.3rem; }
+  .form-control, .form-select { font-size: 16px; } /* evita o zoom automático do iPhone */
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+.card h2.h6, .card .h6 { font-weight: 700; }
+h1, h2, h3, h4, h5, h6 { font-weight: 700; }

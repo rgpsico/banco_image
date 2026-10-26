@@ -9,6 +9,7 @@ use App\Models\Gallery;
 use App\Models\Media;
 use App\Models\Tenant;
 use App\Modules\Galleries\Jobs\BackfillGalleryVariants;
+use App\Modules\Media\Support\MediaUrls;
 use App\Support\Audit;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -127,6 +128,9 @@ class GalleryController extends Controller
             'allow_download' => $g->allow_download, 'watermark' => $g->watermark,
             'collection' => $g->collection ? ['id' => $g->collection->ulid, 'name' => $g->collection->name] : null,
             'photos_count' => $photos->count(), 'views_count' => $g->views_count,
+            // até 4 miniaturas (links assinados e temporários) para o painel mostrar o conteúdo da galeria
+            'thumbs' => (clone $photos)->whereHas('variants', fn ($q) => $q->where('kind', 'thumb'))->orderByRaw('COALESCE(taken_at, created_at) desc')->limit(4)->get()
+                ->map(fn (Media $m) => MediaUrls::signed($m, 'thumb'))->values(),
             'created_at' => $g->created_at?->toIso8601String(),
         ];
     }

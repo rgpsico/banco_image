@@ -7,7 +7,7 @@ const emit = defineEmits(['open'])
 <template>
   <div class="row g-3">
     <div v-for="m in items" :key="m.id" class="col-6 col-md-4 col-xl-3">
-      <button class="card media-card h-100 w-100 text-start shadow-sm border-0" @click="emit('open', m)">
+      <button class="card media-card h-100 w-100 text-start" @click="emit('open', m)">
         <div class="thumb">
           <img v-if="m.thumbnail_url" :src="m.thumbnail_url" :alt="m.name" loading="lazy" />
           <div v-else-if="m.status === 'processing'" class="placeholder-box"><div class="spinner-border spinner-border-sm"></div><div class="small mt-1">Processando…</div></div>
@@ -26,7 +26,7 @@ const emit = defineEmits(['open'])
 
 <style scoped>
 .media-card { overflow: hidden; background: #fff; transition: transform .1s, box-shadow .1s; }
-.media-card:hover { transform: translateY(-2px); box-shadow: 0 .5rem 1rem rgba(0,0,0,.12) !important; }
+.media-card:hover { transform: translateY(-2px); box-shadow: var(--mh-shadow-lg, 0 .5rem 1rem rgba(0,0,0,.12)); }
 .thumb { position: relative; aspect-ratio: 4 / 3; background: #e9edf5; display: flex; align-items: center; justify-content: center; }
 .thumb img { width: 100%; height: 100%; object-fit: cover; }
 .placeholder-box { text-align: center; color: #6b7280; }

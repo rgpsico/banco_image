@@ -54,7 +54,7 @@ async function remove(m) {
 <template>
   <div v-if="!tenants.current" class="alert alert-info">Selecione ou crie um projeto primeiro.</div>
   <div v-else>
-    <h1 class="h4 mb-3">Membros de {{ tenants.current.name }}</h1>
+    <div class="page-head"><div><h1>Membros</h1><p>{{ tenants.current.name }}</p></div></div>
     <FormAlert :message="error" />
 
     <div class="card shadow-sm mb-4">
@@ -100,3 +100,16 @@ async function remove(m) {
     </div>
   </div>
 </template>
+
+<style scoped>
+/* No celular cada membro vira um bloco (sem rolagem lateral). */
+@media (max-width: 575.98px) {
+  table, tbody, tr, td { display: block; width: 100%; }
+  thead { display: none; }
+  tr { padding: 12px 14px; border-bottom: 1px solid var(--mh-line); }
+  tr:last-child { border-bottom: 0; }
+  td { padding: 2px 0 !important; border: 0 !important; background: transparent !important; box-shadow: none !important; }
+  td.text-end { text-align: left !important; padding-top: 8px !important; }
+  td select { width: 100% !important; }
+}
+</style>
