@@ -14,6 +14,11 @@ return [
     |
     */
 
+    // Só para o comando mediahub:import-unsplash (chave de acesso gratuita da API do Unsplash).
+    'unsplash' => [
+        'key' => env('UNSPLASH_ACCESS_KEY'),
+    ],
+
     'postmark' => [
         'key' => env('POSTMARK_API_KEY'),
     ],

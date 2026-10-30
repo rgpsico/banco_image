@@ -1,0 +1,170 @@
+[
+ {
+  "query": "burger",
+  "title": "Hambúrguer artesanal burger lanche",
+  "collection": "Comidas",
+  "count": 3
+ },
+ {
+  "query": "pizza",
+  "title": "Pizza",
+  "collection": "Comidas",
+  "count": 3
+ },
+ {
+  "query": "sandwich",
+  "title": "Sanduíche lanche",
+  "collection": "Comidas",
+  "count": 2
+ },
+ {
+  "query": "french fries",
+  "title": "Batata frita fritas",
+  "collection": "Comidas",
+  "count": 2
+ },
+ {
+  "query": "hot dog",
+  "title": "Cachorro-quente hot dog",
+  "collection": "Comidas",
+  "count": 2
+ },
+ {
+  "query": "pasta",
+  "title": "Macarrão massa espaguete",
+  "collection": "Comidas",
+  "count": 2
+ },
+ {
+  "query": "sushi",
+  "title": "Sushi japonês",
+  "collection": "Comidas",
+  "count": 2
+ },
+ {
+  "query": "grilled meat barbecue",
+  "title": "Churrasco carne grelhada",
+  "collection": "Comidas",
+  "count": 2
+ },
+ {
+  "query": "fried chicken",
+  "title": "Frango frito",
+  "collection": "Comidas",
+  "count": 2
+ },
+ {
+  "query": "salad",
+  "title": "Salada",
+  "collection": "Comidas",
+  "count": 2
+ },
+ {
+  "query": "seafood shrimp",
+  "title": "Camarão frutos do mar petisco",
+  "collection": "Comidas",
+  "count": 2
+ },
+ {
+  "query": "acai bowl",
+  "title": "Açaí",
+  "collection": "Sobremesas",
+  "count": 2
+ },
+ {
+  "query": "ice cream",
+  "title": "Sorvete",
+  "collection": "Sobremesas",
+  "count": 2
+ },
+ {
+  "query": "chocolate cake",
+  "title": "Bolo de chocolate",
+  "collection": "Sobremesas",
+  "count": 2
+ },
+ {
+  "query": "donut",
+  "title": "Donut rosquinha",
+  "collection": "Sobremesas",
+  "count": 1
+ },
+ {
+  "query": "caipirinha",
+  "title": "Caipirinha drink",
+  "collection": "Bebidas",
+  "count": 3
+ },
+ {
+  "query": "cocktail",
+  "title": "Drink coquetel",
+  "collection": "Bebidas",
+  "count": 2
+ },
+ {
+  "query": "beer glass",
+  "title": "Cerveja chopp",
+  "collection": "Bebidas",
+  "count": 3
+ },
+ {
+  "query": "soda can",
+  "title": "Refrigerante lata",
+  "collection": "Bebidas",
+  "count": 2
+ },
+ {
+  "query": "orange juice",
+  "title": "Suco de laranja",
+  "collection": "Bebidas",
+  "count": 2
+ },
+ {
+  "query": "coconut water",
+  "title": "Água de coco",
+  "collection": "Bebidas",
+  "count": 2
+ },
+ {
+  "query": "coffee cup",
+  "title": "Café",
+  "collection": "Bebidas",
+  "count": 2
+ },
+ {
+  "query": "smartphone",
+  "title": "Celular smartphone",
+  "collection": "Eletrônicos",
+  "count": 3
+ },
+ {
+  "query": "headphones",
+  "title": "Fone de ouvido headphone",
+  "collection": "Eletrônicos",
+  "count": 3
+ },
+ {
+  "query": "laptop",
+  "title": "Notebook laptop",
+  "collection": "Eletrônicos",
+  "count": 2
+ },
+ {
+  "query": "smartwatch",
+  "title": "Relógio smartwatch",
+  "collection": "Eletrônicos",
+  "count": 2
+ },
+ {
+  "query": "sneakers",
+  "title": "Tênis",
+  "collection": "Moda",
+  "count": 2
+ },
+ {
+  "query": "t-shirt",
+  "title": "Camiseta",
+  "collection": "Moda",
+  "count": 2
+ }
+]
