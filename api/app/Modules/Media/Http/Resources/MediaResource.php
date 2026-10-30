@@ -18,6 +18,7 @@ class MediaResource extends JsonResource
             'type' => $this->type->value,
             'name' => $this->display_name,
             'original_name' => $this->original_name,
+            'tags' => $this->tagList(),
             'mime_type' => $this->mime_type,
             'extension' => $this->extension,
             'size_bytes' => $this->size_bytes,

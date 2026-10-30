@@ -36,7 +36,7 @@ class IntegrationController extends Controller
         $v = $request->validate([
             'search' => ['nullable', 'string', 'max:100'],
             'type' => ['nullable', Rule::in(['image', 'video'])],
-            'collection' => ['nullable', 'string', 'max:40'],
+            'collection' => ['nullable', 'string', 'max:300', 'regex:/^[0-9a-z]{26}(,[0-9a-z]{26})*$/i'], // uma ou várias pastas; inclui as subpastas
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
             'url_ttl' => ['nullable', 'integer', 'min:60', 'max:86400'],
         ]);
@@ -45,13 +45,13 @@ class IntegrationController extends Controller
         $query = Media::query()->where('status', MediaStatus::Ready->value)->with(['variants', 'collections'])->latest('id');
 
         if (! empty($v['search'])) {
-            $query->where('display_name', 'like', '%' . addcslashes($v['search'], '%_\\') . '%');
+            $query->search($v['search']);
         }
         if (! empty($v['type'])) {
             $query->where('type', $v['type']);
         }
         if (! empty($v['collection'])) {
-            $query->whereHas('collections', fn ($q) => $q->where('collections.ulid', $v['collection']));
+            $query->inCollections(array_slice(explode(',', $v['collection']), 0, 10));
         }
 
         return IntegrationMediaResource::collection($query->paginate($v['per_page'] ?? 24)->withQueryString());

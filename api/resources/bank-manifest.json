@@ -2,169 +2,448 @@
  {
   "query": "burger",
   "title": "Hambúrguer artesanal burger lanche",
-  "collection": "Comidas",
-  "count": 3
+  "collection": "Comidas/Lanches",
+  "count": 3,
+  "tags": [
+   "hamburguer",
+   "hambúrguer",
+   "burger",
+   "x-burguer",
+   "xis",
+   "x-salada",
+   "lanche",
+   "artesanal",
+   "cheeseburger",
+   "carne",
+   "pão",
+   "fast food"
+  ]
  },
  {
   "query": "pizza",
   "title": "Pizza",
-  "collection": "Comidas",
-  "count": 3
+  "collection": "Comidas/Pizzas",
+  "count": 3,
+  "tags": [
+   "pizza",
+   "pizzaria",
+   "calabresa",
+   "mussarela",
+   "margherita",
+   "forno a lenha",
+   "italiana"
+  ]
  },
  {
   "query": "sandwich",
   "title": "Sanduíche lanche",
-  "collection": "Comidas",
-  "count": 2
+  "collection": "Comidas/Lanches",
+  "count": 2,
+  "tags": [
+   "sanduiche",
+   "sanduíche",
+   "sandwich",
+   "lanche",
+   "misto quente",
+   "natural",
+   "pão",
+   "presunto",
+   "queijo"
+  ]
  },
  {
   "query": "french fries",
   "title": "Batata frita fritas",
-  "collection": "Comidas",
-  "count": 2
+  "collection": "Comidas/Lanches",
+  "count": 2,
+  "tags": [
+   "batata",
+   "batata frita",
+   "fritas",
+   "french fries",
+   "porção",
+   "petisco",
+   "acompanhamento"
+  ]
  },
  {
   "query": "hot dog",
   "title": "Cachorro-quente hot dog",
-  "collection": "Comidas",
-  "count": 2
+  "collection": "Comidas/Lanches",
+  "count": 2,
+  "tags": [
+   "cachorro quente",
+   "cachorro-quente",
+   "hot dog",
+   "hotdog",
+   "salsicha",
+   "lanche",
+   "dog"
+  ]
  },
  {
   "query": "pasta",
   "title": "Macarrão massa espaguete",
-  "collection": "Comidas",
-  "count": 2
+  "collection": "Comidas/Massas",
+  "count": 2,
+  "tags": [
+   "macarrao",
+   "macarrão",
+   "massa",
+   "espaguete",
+   "spaghetti",
+   "pasta",
+   "molho",
+   "italiana",
+   "parafuso"
+  ]
  },
  {
   "query": "sushi",
   "title": "Sushi japonês",
-  "collection": "Comidas",
-  "count": 2
+  "collection": "Comidas/Japonesa",
+  "count": 2,
+  "tags": [
+   "sushi",
+   "japonesa",
+   "japonês",
+   "temaki",
+   "sashimi",
+   "combinado",
+   "salmão",
+   "oriental"
+  ]
  },
  {
   "query": "grilled meat barbecue",
   "title": "Churrasco carne grelhada",
-  "collection": "Comidas",
-  "count": 2
+  "collection": "Comidas/Carnes e aves",
+  "count": 2,
+  "tags": [
+   "churrasco",
+   "carne",
+   "grelhado",
+   "grelhada",
+   "espetinho",
+   "bbq",
+   "brasa",
+   "picanha",
+   "costela"
+  ]
  },
  {
   "query": "fried chicken",
   "title": "Frango frito",
-  "collection": "Comidas",
-  "count": 2
+  "collection": "Comidas/Carnes e aves",
+  "count": 2,
+  "tags": [
+   "frango",
+   "frango frito",
+   "coxinha da asa",
+   "asa",
+   "empanado",
+   "crocante",
+   "galinha"
+  ]
  },
  {
   "query": "salad",
   "title": "Salada",
-  "collection": "Comidas",
-  "count": 2
+  "collection": "Comidas/Saladas",
+  "count": 2,
+  "tags": [
+   "salada",
+   "salad",
+   "saudável",
+   "fit",
+   "verde",
+   "folhas",
+   "vegetariano",
+   "light"
+  ]
  },
  {
   "query": "seafood shrimp",
   "title": "Camarão frutos do mar petisco",
-  "collection": "Comidas",
-  "count": 2
+  "collection": "Comidas/Petiscos",
+  "count": 2,
+  "tags": [
+   "camarao",
+   "camarão",
+   "frutos do mar",
+   "petisco",
+   "peixe",
+   "mariscos",
+   "porção",
+   "praia"
+  ]
  },
  {
   "query": "acai bowl",
   "title": "Açaí",
-  "collection": "Sobremesas",
-  "count": 2
+  "collection": "Sobremesas/Açaí",
+  "count": 2,
+  "tags": [
+   "acai",
+   "açaí",
+   "tigela",
+   "bowl",
+   "granola",
+   "fruta",
+   "frutas",
+   "sobremesa",
+   "gelado"
+  ]
  },
  {
   "query": "ice cream",
   "title": "Sorvete",
-  "collection": "Sobremesas",
-  "count": 2
+  "collection": "Sobremesas/Sorvetes",
+  "count": 2,
+  "tags": [
+   "sorvete",
+   "picolé",
+   "casquinha",
+   "gelado",
+   "ice cream",
+   "sobremesa",
+   "sorveteria"
+  ]
  },
  {
   "query": "chocolate cake",
   "title": "Bolo de chocolate",
-  "collection": "Sobremesas",
-  "count": 2
+  "collection": "Sobremesas/Bolos e doces",
+  "count": 2,
+  "tags": [
+   "bolo",
+   "chocolate",
+   "torta",
+   "doce",
+   "confeitaria",
+   "aniversário",
+   "sobremesa",
+   "brigadeiro"
+  ]
  },
  {
   "query": "donut",
   "title": "Donut rosquinha",
-  "collection": "Sobremesas",
-  "count": 1
+  "collection": "Sobremesas/Bolos e doces",
+  "count": 1,
+  "tags": [
+   "donut",
+   "rosquinha",
+   "doce",
+   "confeitaria",
+   "sobremesa",
+   "lanche"
+  ]
  },
  {
   "query": "caipirinha",
   "title": "Caipirinha drink",
-  "collection": "Bebidas",
-  "count": 3
+  "collection": "Bebidas/Drinks",
+  "count": 3,
+  "tags": [
+   "caipirinha",
+   "caipira",
+   "limão",
+   "cachaça",
+   "drink",
+   "drinque",
+   "coquetel",
+   "batida",
+   "praia",
+   "alcoólica"
+  ]
  },
  {
   "query": "cocktail",
   "title": "Drink coquetel",
-  "collection": "Bebidas",
-  "count": 2
+  "collection": "Bebidas/Drinks",
+  "count": 2,
+  "tags": [
+   "drink",
+   "drinque",
+   "coquetel",
+   "cocktail",
+   "mojito",
+   "gin",
+   "vodka",
+   "bar",
+   "alcoólica"
+  ]
  },
  {
   "query": "beer glass",
   "title": "Cerveja chopp",
-  "collection": "Bebidas",
-  "count": 3
+  "collection": "Bebidas/Cervejas",
+  "count": 3,
+  "tags": [
+   "cerveja",
+   "chopp",
+   "chope",
+   "beer",
+   "gelada",
+   "long neck",
+   "bar",
+   "alcoólica",
+   "cervejaria"
+  ]
  },
  {
   "query": "soda can",
   "title": "Refrigerante lata",
-  "collection": "Bebidas",
-  "count": 2
+  "collection": "Bebidas/Refrigerantes",
+  "count": 2,
+  "tags": [
+   "refrigerante",
+   "refri",
+   "lata",
+   "coca",
+   "coca-cola",
+   "guaraná",
+   "soda",
+   "cola",
+   "bebida gelada"
+  ]
  },
  {
   "query": "orange juice",
   "title": "Suco de laranja",
-  "collection": "Bebidas",
-  "count": 2
+  "collection": "Bebidas/Sucos e água de coco",
+  "count": 2,
+  "tags": [
+   "suco",
+   "laranja",
+   "suco natural",
+   "natural",
+   "fruta",
+   "vitamina",
+   "sem álcool"
+  ]
  },
  {
   "query": "coconut water",
   "title": "Água de coco",
-  "collection": "Bebidas",
-  "count": 2
+  "collection": "Bebidas/Sucos e água de coco",
+  "count": 2,
+  "tags": [
+   "agua de coco",
+   "água de coco",
+   "coco",
+   "coco gelado",
+   "praia",
+   "natural",
+   "sem álcool"
+  ]
  },
  {
   "query": "coffee cup",
   "title": "Café",
-  "collection": "Bebidas",
-  "count": 2
+  "collection": "Bebidas/Café",
+  "count": 2,
+  "tags": [
+   "cafe",
+   "café",
+   "cafezinho",
+   "expresso",
+   "cappuccino",
+   "xícara",
+   "padaria",
+   "quente"
+  ]
  },
  {
   "query": "smartphone",
   "title": "Celular smartphone",
-  "collection": "Eletrônicos",
-  "count": 3
+  "collection": "Eletrônicos/Celulares",
+  "count": 3,
+  "tags": [
+   "celular",
+   "smartphone",
+   "iphone",
+   "telefone",
+   "android",
+   "aparelho",
+   "mobile",
+   "tela"
+  ]
  },
  {
   "query": "headphones",
   "title": "Fone de ouvido headphone",
-  "collection": "Eletrônicos",
-  "count": 3
+  "collection": "Eletrônicos/Fones",
+  "count": 3,
+  "tags": [
+   "fone",
+   "fone de ouvido",
+   "headphone",
+   "headset",
+   "earphone",
+   "bluetooth",
+   "áudio",
+   "música"
+  ]
  },
  {
   "query": "laptop",
   "title": "Notebook laptop",
-  "collection": "Eletrônicos",
-  "count": 2
+  "collection": "Eletrônicos/Computadores",
+  "count": 2,
+  "tags": [
+   "notebook",
+   "laptop",
+   "computador",
+   "pc",
+   "macbook",
+   "trabalho"
+  ]
  },
  {
   "query": "smartwatch",
   "title": "Relógio smartwatch",
-  "collection": "Eletrônicos",
-  "count": 2
+  "collection": "Eletrônicos/Relógios",
+  "count": 2,
+  "tags": [
+   "relogio",
+   "relógio",
+   "smartwatch",
+   "apple watch",
+   "pulseira",
+   "wearable"
+  ]
  },
  {
   "query": "sneakers",
   "title": "Tênis",
-  "collection": "Moda",
-  "count": 2
+  "collection": "Moda/Calçados",
+  "count": 2,
+  "tags": [
+   "tenis",
+   "tênis",
+   "sneaker",
+   "calçado",
+   "sapato",
+   "esporte",
+   "corrida",
+   "nike"
+  ]
  },
  {
   "query": "t-shirt",
   "title": "Camiseta",
-  "collection": "Moda",
-  "count": 2
+  "collection": "Moda/Roupas",
+  "count": 2,
+  "tags": [
+   "camiseta",
+   "camisa",
+   "roupa",
+   "t-shirt",
+   "blusa",
+   "vestuário",
+   "malha"
+  ]
  }
 ]

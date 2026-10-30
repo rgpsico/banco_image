@@ -25,6 +25,7 @@ class IntegrationMediaResource extends JsonResource
             'id' => $this->ulid,
             'type' => $this->type->value,
             'name' => $this->display_name,
+            'tags' => $this->tagList(),
             'mime_type' => $this->mime_type,
             'width' => $this->width,
             'height' => $this->height,

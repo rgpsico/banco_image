@@ -26,7 +26,7 @@ class MediaController extends Controller
         $query = Media::query()->with(['variants', 'collections'])->latest('id');
 
         if ($search = $request->validated('search')) {
-            $query->where('display_name', 'like', '%' . addcslashes($search, '%_\\') . '%');
+            $query->search($search);
         }
 
         if ($type = $request->validated('type')) {
@@ -34,7 +34,7 @@ class MediaController extends Controller
         }
 
         if ($collection = $request->validated('collection')) {
-            $query->whereHas('collections', fn ($q) => $q->where('collections.ulid', $collection));
+            $query->inCollections(array_slice(explode(',', $collection), 0, 10));
         }
 
         return MediaResource::collection($query->paginate($request->validated('per_page') ?? 24)->withQueryString());
@@ -53,8 +53,15 @@ class MediaController extends Controller
         $model = $this->find($media);
         $this->authorize('update', $model);
 
-        $model->update(['display_name' => $inspector->displayName($request->validated('display_name'))]);
-        Audit::record('media.renamed', ['media' => $model->ulid]);
+        $changes = [];
+        if ($request->has('display_name')) {
+            $changes['display_name'] = $inspector->displayName($request->validated('display_name'));
+        }
+        if ($request->has('tags')) {
+            $changes['tags'] = implode(',', Media::normalizeTags($request->validated('tags'))) ?: null;
+        }
+        $model->update($changes);
+        Audit::record($request->has('tags') ? 'media.tagged' : 'media.renamed', ['media' => $model->ulid]);
 
         return new MediaResource($model->load(['variants', 'collections']));
     }

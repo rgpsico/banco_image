@@ -30,6 +30,11 @@ export const useMediaStore = defineStore('media', {
       this.replace(data.data)
       return data.data
     },
+    async setTags(tenantId, id, tags) {
+      const { data } = await api.patch(`/tenants/${tenantId}/media/${id}`, { tags })
+      this.replace(data.data)
+      return data.data
+    },
     async remove(tenantId, id) {
       await api.delete(`/tenants/${tenantId}/media/${id}`)
       this.items = this.items.filter((m) => m.id !== id)

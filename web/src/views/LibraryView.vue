@@ -70,7 +70,7 @@ onBeforeUnmount(() => { clearTimeout(poll); clearTimeout(debounce) })
         <div><h1>Biblioteca</h1><p>{{ tenants.current.name }}</p></div>
       </div>
       <div class="filters mb-3">
-        <input v-model="search" class="form-control" type="search" placeholder="Buscar por nome" aria-label="Buscar" @input="onSearch" />
+        <input v-model="search" class="form-control" type="search" placeholder="Buscar por nome ou tag" aria-label="Buscar" @input="onSearch" />
         <select v-model="media.filters.type" class="form-select" aria-label="Tipo" @change="media.filters.page = 1">
           <option value="">Todos os tipos</option>
           <option value="image">Imagens</option>

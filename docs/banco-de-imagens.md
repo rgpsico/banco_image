@@ -16,6 +16,14 @@ Sem `MEDIAHUB_URL`/`MEDIAHUB_KEY` o botão simplesmente não aparece e o upload 
 `ppgfood-back`: `App\Services\ImageBank` (lista/busca/copia), `Admin\ImageBankController` (`GET /admin/image-bank`, JSON para o seletor),
 seletor em `resources/views/admin/pages/products/_partials/form.blade.php`, e `ProductController` aceita `bank_media_id`.
 
+## Filtros: pastas, subpastas e tags
+- **Pastas e subpastas:** Comidas → Lanches, Pizzas, Massas...; Bebidas → Cervejas, Drinks...; escolher uma pasta traz também as subpastas.
+  A API aceita várias pastas de uma vez: `GET /integration/media?collection=<ulid>,<ulid>`.
+- **Tags:** palavras-chave por imagem (`tags` na API, editáveis no painel do MediaHub, em "Tags"). A busca (`search`) procura no nome **e** nas tags,
+  sem acento nem maiúscula, e todas as palavras digitadas precisam casar (ex.: `burger lanche`).
+- **Cada sistema escolhe o que mostra:** `MEDIAHUB_FOLDERS=Comidas,Bebidas,Sobremesas` no `.env` do PPGFood esconde Eletrônicos e Moda
+  (e nas lojas do PPG o contrário). Vazio = todas as pastas.
+
 ## Popular o banco com fotos livres (Unsplash)
 O Unsplash bloqueia robôs no site; o caminho permitido é a **API oficial** (chave gratuita, modo demonstração: 50 pedidos/hora).
 1. Crie um app em https://unsplash.com/developers e copie a **Access Key**.
@@ -24,7 +32,7 @@ O Unsplash bloqueia robôs no site; o caminho permitido é a **API oficial** (ch
 ```bash
 docker compose exec -T api php artisan mediahub:import-unsplash <ULID_DO_PROJETO>
 ```
-O manifesto das categorias está em `api/resources/bank-manifest.json` (`query` em inglês para buscar, `title` em português com
-sinônimos para a busca do seletor, `collection`, `count`). `--only=Pizza` importa só uma categoria; `--dry-run` só mostra.
+O manifesto das categorias está em `api/resources/bank-manifest.json` (`query` em inglês para buscar, `title`, `collection` como caminho
+`Comidas/Lanches` (cria pasta e subpasta), `tags`, `count`). `--refresh` reaplica pasta e tags do manifesto às fotos já importadas, sem baixar nada. `--only=Pizza` importa só uma categoria; `--dry-run` só mostra.
 O comando avisa o download à API (exigência do Unsplash) e guarda o crédito de cada foto em `storage/app/unsplash-imported.json`.
 As fotos do Unsplash têm licença que permite uso comercial sem pedir permissão (atribuição é opcional, mas apreciada).

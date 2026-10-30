@@ -17,7 +17,7 @@ class IndexMediaRequest extends FormRequest
         return [
             'search' => ['nullable', 'string', 'max:100'],
             'type' => ['nullable', Rule::in(['image', 'video'])],
-            'collection' => ['nullable', 'string', 'size:26'],
+            'collection' => ['nullable', 'string', 'max:300', 'regex:/^[0-9a-z]{26}(,[0-9a-z]{26})*$/i'], // uma ou várias pastas (ULIDs separados por vírgula)
             'per_page' => ['nullable', 'integer', 'min:1', 'max:100'],
         ];
     }

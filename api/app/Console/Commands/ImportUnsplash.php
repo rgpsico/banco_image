@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Collection;
+use App\Models\Media;
 use App\Models\Tenant;
 use App\Modules\Media\Services\PhotoIngestService;
 use App\Modules\Tenants\Support\CurrentTenant;
@@ -23,13 +24,14 @@ class ImportUnsplash extends Command
     protected $signature = 'mediahub:import-unsplash {tenant : ULID do projeto que recebe as fotos}
                             {--manifest=resources/bank-manifest.json : JSON [{query,title,collection,count}]}
                             {--only= : importa só as entradas cujo título contém este texto}
+                            {--refresh : reaplica pasta (e subpasta) e tags do manifesto às fotos JÁ importadas, sem baixar nada}
                             {--dry-run : só mostra o que faria}';
     protected $description = 'Importa fotos livres (Unsplash) para o banco de imagens, por categoria.';
 
     public function handle(CurrentTenant $current, PhotoIngestService $ingest): int
     {
         $key = (string) config('services.unsplash.key');
-        if ($key === '') {
+        if ($key === '' && ! $this->option('refresh')) {
             $this->error('Defina UNSPLASH_ACCESS_KEY no api/.env (chave gratuita em unsplash.com/developers).');
 
             return self::FAILURE;
@@ -44,13 +46,18 @@ class ImportUnsplash extends Command
         $current->set($tenant);
 
         $manifest = json_decode((string) File::get(base_path($this->option('manifest'))), true) ?: [];
-        $statePath = storage_path('app/unsplash-imported.json');
+        $statePath = config('mediahub.unsplash_state', storage_path('app/unsplash-imported.json'));
         $state = File::exists($statePath) ? (json_decode(File::get($statePath), true) ?: []) : [];
         $api = Http::withHeaders(['Authorization' => 'Client-ID ' . $key, 'Accept-Version' => 'v1'])->timeout(30);
         $total = 0;
 
         foreach ($manifest as $entry) {
             if ($this->option('only') && ! Str::contains(Str::lower($entry['title']), Str::lower($this->option('only')))) {
+                continue;
+            }
+
+            if ($this->option('refresh')) {
+                $this->refresh($tenant, $entry, $state);
                 continue;
             }
 
@@ -102,6 +109,7 @@ class ImportUnsplash extends Command
                     $name = sprintf('%s %d', $entry['title'], $n + 1);
                     $file = new UploadedFile($tmp, $photo['id'] . '.jpg', 'image/jpeg', null, true);
                     $media = $ingest->ingest($tenant, $file, $name, null, $collection);
+                    $this->tag($media, $entry);
                     @unlink($tmp);
                 } catch (Throwable $e) {
                     $this->warn("  falhou {$photo['id']}: " . Str::limit($e->getMessage(), 90));
@@ -125,11 +133,54 @@ class ImportUnsplash extends Command
         return self::SUCCESS;
     }
 
-    private function collection(Tenant $tenant, string $name): Collection
+    /** Aceita caminho "Comidas/Lanches": cria a pasta e as subpastas que faltarem e devolve a última. */
+    private function collection(Tenant $tenant, string $path): Collection
     {
-        return Collection::where('name', $name)->first() ?? Collection::create([
-            'tenant_id' => $tenant->id, 'name' => $name, 'slug' => Str::slug($name), 'created_by' => $tenant->created_by,
-        ]);
+        $parent = null;
+
+        foreach (array_filter(array_map('trim', explode('/', $path))) as $name) {
+            $parent = Collection::where('name', $name)->where('parent_id', $parent?->id)->first() ?? Collection::create([
+                'tenant_id' => $tenant->id, 'parent_id' => $parent?->id, 'name' => $name,
+                'slug' => $this->slug($name, $parent), 'created_by' => $tenant->created_by,
+            ]);
+        }
+
+        return $parent;
+    }
+
+    private function slug(string $name, ?Collection $parent): string
+    {
+        $base = Str::slug($name);
+        $slug = $base;
+
+        for ($i = 2; Collection::where('parent_id', $parent?->id)->where('slug', $slug)->exists(); $i++) {
+            $slug = $base . '-' . $i;
+        }
+
+        return $slug;
+    }
+
+    private function tag(Media $media, array $entry): void
+    {
+        $media->update(['tags' => implode(',', Media::normalizeTags($entry['tags'] ?? [])) ?: null]);
+    }
+
+    /** Reaplica pasta e tags do manifesto às fotos desta categoria que já foram importadas. */
+    private function refresh(Tenant $tenant, array $entry, array $state): void
+    {
+        $collection = $this->collection($tenant, $entry['collection'] ?? 'Geral');
+        $n = 0;
+
+        foreach ($state as $item) {
+            if ($item['title'] !== $entry['title'] || ! ($media = Media::where('ulid', $item['media'])->first())) {
+                continue;
+            }
+            $media->collections()->sync([$collection->id => ['added_by' => $tenant->created_by]]);
+            $this->tag($media, $entry);
+            $n++;
+        }
+
+        $this->info("↻ {$entry['title']}: {$n} → {$entry['collection']}");
     }
 
     /** A chave de demonstração permite 50 pedidos por hora: ao acabar, para e dá para rodar de novo depois. */

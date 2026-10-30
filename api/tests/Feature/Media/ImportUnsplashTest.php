@@ -22,15 +22,16 @@ class ImportUnsplashTest extends TestCase
     {
         parent::setUp();
         $this->fakeDisks();
-        config(['services.unsplash.key' => 'test-key']);
-        File::put(base_path($this->manifest), json_encode([['query' => 'burger', 'title' => 'Hambúrguer', 'collection' => 'Comidas', 'count' => 2]]));
-        @unlink(storage_path('app/unsplash-imported.json'));
+        // Arquivo de controle PRÓPRIO do teste: nunca o de produção (storage/app/unsplash-imported.json).
+        config(['services.unsplash.key' => 'test-key', 'mediahub.unsplash_state' => storage_path('framework/testing-unsplash-state.json')]);
+        File::put(base_path($this->manifest), json_encode([['query' => 'burger', 'title' => 'Hambúrguer', 'collection' => 'Comidas', 'count' => 2, 'tags' => ['Burger', 'lanche']]]));
+        @unlink(storage_path('framework/testing-unsplash-state.json'));
     }
 
     protected function tearDown(): void
     {
         @unlink(base_path($this->manifest));
-        @unlink(storage_path('app/unsplash-imported.json'));
+        @unlink(storage_path('framework/testing-unsplash-state.json'));
         parent::tearDown();
     }
 
@@ -88,5 +89,26 @@ class ImportUnsplashTest extends TestCase
 
         $this->artisan('mediahub:import-unsplash', ['tenant' => $tenant->ulid, '--manifest' => $this->manifest])->assertSuccessful();
         $this->assertSame(0, Media::withoutGlobalScope('tenant')->where('tenant_id', $tenant->id)->count());
+    }
+
+    public function test_manifest_supports_subfolders_tags_and_refresh_reorganizes_existing_photos(): void
+    {
+        [, $tenant] = $this->userWithRole(TenantRole::Owner);
+        $this->fakeUnsplash();
+        $this->artisan('mediahub:import-unsplash', ['tenant' => $tenant->ulid, '--manifest' => $this->manifest])->assertSuccessful();
+
+        $first = Media::withoutGlobalScope('tenant')->where('tenant_id', $tenant->id)->orderBy('id')->first();
+        $this->assertSame(['burger', 'lanche'], $first->tagList());
+
+        // O manifesto muda: agora a categoria vai para Comidas/Lanches e ganha mais uma tag.
+        File::put(base_path($this->manifest), json_encode([['query' => 'burger', 'title' => 'Hambúrguer', 'collection' => 'Comidas/Lanches', 'count' => 2, 'tags' => ['burger', 'xis']]]));
+        $this->artisan('mediahub:import-unsplash', ['tenant' => $tenant->ulid, '--manifest' => $this->manifest, '--refresh' => true])->assertSuccessful();
+
+        $lanches = Collection::withoutGlobalScope('tenant')->where('name', 'Lanches')->firstOrFail();
+        $this->assertSame('Comidas', $lanches->parent->name);
+        $this->assertSame(2, $lanches->media()->count());
+        $this->assertSame(['burger', 'xis'], $first->fresh()->tagList());
+        $this->assertSame(1, Collection::withoutGlobalScope('tenant')->where('name', 'Comidas')->count()); // reaproveitou a pasta, sem duplicar
+        $this->assertSame(0, Collection::withoutGlobalScope('tenant')->where('name', 'Comidas')->firstOrFail()->media()->count()); // saiu da pasta antiga
     }
 }

@@ -15,16 +15,30 @@ const collections = useCollectionsStore()
 const name = ref(props.media.name)
 const error = ref('')
 const busy = ref(false)
+const tags = ref([...(props.media.tags || [])])
+const newTag = ref('')
 const inFolders = ref(new Set(props.media.collections || []))
 const canEdit = computed(() => tenants.can('editor'))
 
-watch(() => props.media, (m) => { name.value = m.name; inFolders.value = new Set(m.collections || []) })
+watch(() => props.media, (m) => { name.value = m.name; tags.value = [...(m.tags || [])]; inFolders.value = new Set(m.collections || []) })
 
 async function rename() {
   if (name.value === props.media.name) return
   error.value = ''
   try { await store.rename(tenants.currentId, props.media.id, name.value); emit('changed') } catch (e) { error.value = parseError(e).message }
 }
+
+async function saveTags(next) {
+  error.value = ''
+  try { await store.setTags(tenants.currentId, props.media.id, next); tags.value = next; emit('changed') } catch (e) { error.value = parseError(e).message }
+}
+function addTags() {
+  const add = newTag.value.split(',').map((t) => t.trim().toLowerCase()).filter(Boolean)
+  newTag.value = ''
+  const next = [...new Set([...tags.value, ...add])].slice(0, 20)
+  if (next.length !== tags.value.length) saveTags(next)
+}
+function removeTag(t) { saveTags(tags.value.filter((x) => x !== t)) }
 
 async function download() {
   busy.value = true; error.value = ''
@@ -73,6 +87,18 @@ async function toggleFolder(c, checked) {
               <div class="input-group input-group-sm mb-3">
                 <input v-model="name" class="form-control" maxlength="150" :disabled="!canEdit" @keyup.enter="rename" />
                 <button v-if="canEdit" class="btn btn-outline-secondary" :disabled="name === media.name || !name.trim()" @click="rename">Salvar</button>
+              </div>
+
+              <div class="mb-3">
+                <div class="small fw-semibold mb-1">Tags <span class="text-muted fw-normal">(ajudam a achar esta imagem na busca)</span></div>
+                <div class="d-flex flex-wrap gap-1 mb-1">
+                  <span v-for="t in tags" :key="t" class="badge text-bg-light border">{{ t }}<button v-if="canEdit" type="button" class="btn-close ms-1" style="font-size:.55rem" :aria-label="'Remover ' + t" @click="removeTag(t)"></button></span>
+                  <span v-if="!tags.length" class="small text-muted">Nenhuma tag ainda.</span>
+                </div>
+                <div v-if="canEdit" class="input-group input-group-sm">
+                  <input v-model="newTag" class="form-control" maxlength="60" placeholder="Ex.: hamburguer, lanche, xis" @keyup.enter="addTags" />
+                  <button class="btn btn-outline-secondary" type="button" :disabled="!newTag.trim()" @click="addTags">Adicionar</button>
+                </div>
               </div>
 
               <dl class="row small mb-3">
