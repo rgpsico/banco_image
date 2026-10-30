@@ -57,7 +57,9 @@ onMounted(async () => {
   try {
     info.value = (await api.get(`/galleries/${token}`)).data.data
     document.title = `${info.value.title} · ${info.value.project}`
-    date.value = info.value.today // sempre abre no dia de hoje
+    // Abre em hoje; se hoje não tem fotos (ex.: link do site de um guia), abre no dia mais recente que tem.
+    const days = info.value.days || []
+    date.value = days.length && !days.some((d) => d.date === info.value.today) ? days[0].date : info.value.today
     state.value = 'ready'
     await loadPhotos(true)
   } catch { state.value = 'gone' }
