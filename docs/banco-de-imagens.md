@@ -36,3 +36,13 @@ O manifesto das categorias está em `api/resources/bank-manifest.json` (`query` 
 `Comidas/Lanches` (cria pasta e subpasta), `tags`, `count`). `--refresh` reaplica pasta e tags do manifesto às fotos já importadas, sem baixar nada. `--only=Pizza` importa só uma categoria; `--dry-run` só mostra.
 O comando avisa o download à API (exigência do Unsplash) e guarda o crédito de cada foto em `storage/app/unsplash-imported.json`.
 As fotos do Unsplash têm licença que permite uso comercial sem pedir permissão (atribuição é opcional, mas apreciada).
+
+## Gerar fotos de produtos com IA (Gemini)
+Para produtos que não têm foto livre boa (itens de barraca de praia, por exemplo):
+```bash
+docker compose exec -T -e GEMINI_API_KEY=... api php artisan mediahub:generate-images <ULID_DO_PROJETO>
+```
+A lista está em `api/resources/bank-generate.json` (`title`, `subject` para o prompt, `collection` como `Bebidas/Praia`, `tags`).
+O comando monta o prompt padrão (fundo areia, 1:1, sem texto/preço/pessoas/logotipo), salva com pasta e tags e pula o que já existe.
+**Requer cobrança ativada** no projeto do Google AI Studio: no plano grátis o limite de imagens é 0 (resposta 429).
+A chave só vai pelo ambiente; não a grave em arquivo. Marcas: o Gemini erra rótulos, por isso os itens saem genéricos (sem marca).

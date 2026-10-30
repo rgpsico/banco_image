@@ -19,6 +19,11 @@ return [
         'key' => env('UNSPLASH_ACCESS_KEY'),
     ],
 
+    // Só para o comando mediahub:generate-images (Google AI Studio). Passe pelo ambiente; não grave a chave em arquivos.
+    'gemini' => [
+        'key' => env('GEMINI_API_KEY'),
+    ],
+
     'postmark' => [
         'key' => env('POSTMARK_API_KEY'),
     ],

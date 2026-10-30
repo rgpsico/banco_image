@@ -1,0 +1,252 @@
+[
+ {
+  "title": "Caipirinha de limão",
+  "subject": "caipirinha de limão em copo baixo, com gelo e rodela de limão",
+  "collection": "Bebidas/Praia",
+  "tags": [
+   "caipirinha",
+   "caipira",
+   "limão",
+   "cachaça",
+   "drink",
+   "praia",
+   "alcoólica",
+   "barraca"
+  ]
+ },
+ {
+  "title": "Caipirinha de morango",
+  "subject": "caipirinha de morango em copo baixo, com gelo e morangos",
+  "collection": "Bebidas/Praia",
+  "tags": [
+   "caipirinha",
+   "caipira",
+   "morango",
+   "cachaça",
+   "drink",
+   "praia",
+   "alcoólica",
+   "barraca"
+  ]
+ },
+ {
+  "title": "Caipirinha de maracujá",
+  "subject": "caipirinha de maracujá em copo baixo, com gelo e maracujá cortado ao meio",
+  "collection": "Bebidas/Praia",
+  "tags": [
+   "caipirinha",
+   "caipira",
+   "maracujá",
+   "maracuja",
+   "cachaça",
+   "drink",
+   "praia",
+   "alcoólica",
+   "barraca"
+  ]
+ },
+ {
+  "title": "Chopp gelado",
+  "subject": "copo de chopp gelado com colarinho de espuma",
+  "collection": "Bebidas/Praia",
+  "tags": [
+   "chopp",
+   "chope",
+   "cerveja",
+   "gelada",
+   "beer",
+   "praia",
+   "alcoólica",
+   "barraca"
+  ]
+ },
+ {
+  "title": "Cerveja long neck",
+  "subject": "garrafa long neck de cerveja gelada, rótulo genérico sem nome nem logotipo, com gotas de condensação",
+  "collection": "Bebidas/Praia",
+  "tags": [
+   "cerveja",
+   "long neck",
+   "garrafa",
+   "gelada",
+   "beer",
+   "brahma",
+   "heineken",
+   "antarctica",
+   "skol",
+   "praia",
+   "alcoólica",
+   "barraca"
+  ]
+ },
+ {
+  "title": "Cerveja lata",
+  "subject": "lata de cerveja gelada, lata genérica sem nome nem logotipo, com gotas de condensação",
+  "collection": "Bebidas/Praia",
+  "tags": [
+   "cerveja",
+   "lata",
+   "gelada",
+   "beer",
+   "brahma",
+   "heineken",
+   "antarctica",
+   "skol",
+   "praia",
+   "alcoólica",
+   "barraca"
+  ]
+ },
+ {
+  "title": "Água de coco",
+  "subject": "coco verde gelado com canudo",
+  "collection": "Bebidas/Praia",
+  "tags": [
+   "agua de coco",
+   "água de coco",
+   "coco",
+   "coco verde",
+   "gelado",
+   "praia",
+   "sem álcool",
+   "barraca"
+  ]
+ },
+ {
+  "title": "Água mineral",
+  "subject": "copo de água mineral gelada ao lado de uma garrafa pet sem rótulo",
+  "collection": "Bebidas/Praia",
+  "tags": [
+   "agua",
+   "água",
+   "mineral",
+   "agua mineral",
+   "garrafa",
+   "praia",
+   "sem álcool",
+   "barraca"
+  ]
+ },
+ {
+  "title": "Refrigerante lata",
+  "subject": "lata de refrigerante gelada, lata genérica sem nome nem logotipo, com gotas de condensação",
+  "collection": "Bebidas/Praia",
+  "tags": [
+   "refrigerante",
+   "refri",
+   "lata",
+   "coca",
+   "guaraná",
+   "cola",
+   "gelado",
+   "praia",
+   "sem álcool",
+   "barraca"
+  ]
+ },
+ {
+  "title": "Suco de laranja natural",
+  "subject": "copo grande de suco de laranja natural com gelo e meia laranja ao lado",
+  "collection": "Bebidas/Praia",
+  "tags": [
+   "suco",
+   "laranja",
+   "suco natural",
+   "natural",
+   "praia",
+   "sem álcool",
+   "barraca"
+  ]
+ },
+ {
+  "title": "Porção de batata frita",
+  "subject": "porção de batata frita crocante em cesta de papel",
+  "collection": "Comidas/Praia",
+  "tags": [
+   "batata",
+   "batata frita",
+   "fritas",
+   "porção",
+   "petisco",
+   "praia",
+   "barraca",
+   "acompanhamento"
+  ]
+ },
+ {
+  "title": "Porção de camarão empanado",
+  "subject": "porção de camarão empanado com fatias de limão",
+  "collection": "Comidas/Praia",
+  "tags": [
+   "camarao",
+   "camarão",
+   "empanado",
+   "porção",
+   "petisco",
+   "frutos do mar",
+   "praia",
+   "barraca"
+  ]
+ },
+ {
+  "title": "Isca de peixe",
+  "subject": "porção de isca de peixe frita com molho tártaro",
+  "collection": "Comidas/Praia",
+  "tags": [
+   "peixe",
+   "isca de peixe",
+   "tilápia",
+   "frito",
+   "porção",
+   "petisco",
+   "praia",
+   "barraca"
+  ]
+ },
+ {
+  "title": "Espetinho de queijo coalho",
+  "subject": "dois espetinhos de queijo coalho grelhado",
+  "collection": "Comidas/Praia",
+  "tags": [
+   "queijo",
+   "coalho",
+   "queijo coalho",
+   "espetinho",
+   "grelhado",
+   "praia",
+   "barraca",
+   "petisco"
+  ]
+ },
+ {
+  "title": "Pastel de camarão",
+  "subject": "pastel frito de camarão dourado, inteiro e cortado ao meio",
+  "collection": "Comidas/Praia",
+  "tags": [
+   "pastel",
+   "camarão",
+   "camarao",
+   "frito",
+   "salgado",
+   "praia",
+   "barraca",
+   "lanche"
+  ]
+ },
+ {
+  "title": "Açaí na tigela",
+  "subject": "tigela de açaí com granola e banana em rodelas",
+  "collection": "Sobremesas/Praia",
+  "tags": [
+   "acai",
+   "açaí",
+   "tigela",
+   "granola",
+   "banana",
+   "sobremesa",
+   "praia",
+   "barraca",
+   "gelado"
+  ]
+ }
+]
